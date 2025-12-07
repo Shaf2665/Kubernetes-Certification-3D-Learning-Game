@@ -353,7 +353,6 @@ export class FundamentalsScene {
                     content.style.paddingBottom = '0';
                     arrow.textContent = '▶';
                     section.setAttribute('data-expanded', 'false');
-                    allExpanded = false;
                 }
             });
 
