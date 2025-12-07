@@ -15,6 +15,12 @@ export class Tutorial {
 
     setupEventListeners() {
         document.getElementById('btn-close-tutorial')?.addEventListener('click', () => {
+            // If tutorial was active and user closes it, fire tutorial-complete event
+            // This allows challenge to start even if tutorial is skipped
+            if (this.active && this.steps.length > 0) {
+                const event = new CustomEvent('tutorial-complete');
+                document.dispatchEvent(event);
+            }
             this.hide();
         });
     }

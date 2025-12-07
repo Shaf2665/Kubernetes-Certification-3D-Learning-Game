@@ -27,9 +27,12 @@ export class ChallengeUI {
         // Listen for tutorial completion
         document.addEventListener('tutorial-complete', () => {
             if (this.currentModule && this.currentModule.challenges && this.currentModule.challenges.length > 0) {
-                setTimeout(() => {
-                    this.startChallenge(this.currentModule.challenges[0]);
-                }, 300);
+                // Only start challenge if not already started
+                if (!this.currentChallenge) {
+                    setTimeout(() => {
+                        this.startChallenge(this.currentModule.challenges[0]);
+                    }, 300);
+                }
             }
         });
     }
@@ -67,6 +70,7 @@ export class ChallengeUI {
         this.currentModule = module;
         this.currentCertificationId = certificationId;
         this.currentChallengeIndex = 0;
+        this.currentChallenge = null; // Reset current challenge
         
         // Show game screen
         const event = new CustomEvent('show-screen', {
@@ -75,8 +79,16 @@ export class ChallengeUI {
         document.dispatchEvent(event);
         
         // Show tutorial first, then start challenge
+        // If module has no tutorial steps or user skips, challenge will start via tutorial-complete event
         setTimeout(() => {
-            this.tutorial.start(module);
+            if (this.tutorial) {
+                this.tutorial.start(module);
+            } else {
+                // If tutorial not available, start challenge directly
+                if (module.challenges && module.challenges.length > 0) {
+                    this.startChallenge(module.challenges[0]);
+                }
+            }
         }, 500);
     }
 
