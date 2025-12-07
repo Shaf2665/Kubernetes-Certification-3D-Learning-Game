@@ -1,0 +1,82 @@
+import { Engine, Scene } from '@babylonjs/core';
+import { MainMenuScene } from '../scenes/MainMenuScene.js';
+import { FundamentalsScene } from '../scenes/FundamentalsScene.js';
+import { LabEnvironmentScene } from '../scenes/LabEnvironmentScene.js';
+
+export type SceneType = 'main-menu' | 'fundamentals' | 'lab';
+
+/**
+ * Manages scene transitions and lifecycle
+ */
+export class SceneManager {
+    private engine: Engine;
+    private currentScene: Scene | null = null;
+    private currentSceneType: SceneType = 'main-menu';
+    private scenes: Map<SceneType, Scene> = new Map();
+
+    constructor(engine: Engine) {
+        this.engine = engine;
+    }
+
+    async init(): Promise<void> {
+        // Create main menu scene first
+        await this.loadScene('main-menu');
+        
+        // Listen for scene change events
+        document.addEventListener('scene-change', async (e: any) => {
+            const sceneType = e.detail?.scene;
+            if (sceneType && (sceneType === 'main-menu' || sceneType === 'fundamentals' || sceneType === 'lab')) {
+                await this.loadScene(sceneType);
+            }
+        });
+    }
+
+    async loadScene(sceneType: SceneType): Promise<void> {
+        // Dispose current scene
+        if (this.currentScene) {
+            this.currentScene.dispose();
+        }
+
+        // Check if scene already exists
+        if (this.scenes.has(sceneType)) {
+            this.currentScene = this.scenes.get(sceneType)!;
+            this.currentSceneType = sceneType;
+            return;
+        }
+
+        // Create new scene
+        let newScene: Scene;
+        switch (sceneType) {
+            case 'main-menu':
+                newScene = await MainMenuScene.create(this.engine);
+                break;
+            case 'fundamentals':
+                newScene = await FundamentalsScene.create(this.engine);
+                break;
+            case 'lab':
+                newScene = await LabEnvironmentScene.create(this.engine);
+                break;
+            default:
+                throw new Error(`Unknown scene type: ${sceneType}`);
+        }
+
+        this.scenes.set(sceneType, newScene);
+        this.currentScene = newScene;
+        this.currentSceneType = sceneType;
+    }
+
+    getCurrentScene(): Scene | null {
+        return this.currentScene;
+    }
+
+    getCurrentSceneType(): SceneType {
+        return this.currentSceneType;
+    }
+
+    dispose(): void {
+        this.scenes.forEach(scene => scene.dispose());
+        this.scenes.clear();
+        this.currentScene = null;
+    }
+}
+

@@ -3,245 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kubernetes Certification 3D Game</title>
-    <link rel="stylesheet" href="./styles/main.css">
-    <link rel="stylesheet" href="./styles/menu.css">
-    <link rel="stylesheet" href="./styles/gamification.css">
-    <link rel="stylesheet" href="./styles/certification.css">
+    <title>Kubernetes 3D Fundamentals Learning Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0a0a;
+        }
+        
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            outline: none;
+        }
+        
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: #4a90e2;
+        }
+        
+        #loadingScreen.hidden {
+            display: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(74, 144, 226, 0.3);
+            border-top-color: #4a90e2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Main Menu Screen -->
-        <div id="main-menu" class="screen active">
-            <div class="menu-container">
-                <h1 class="game-title">Kubernetes Certification Game</h1>
-                <p class="game-subtitle">Master Kubernetes through interactive 3D challenges</p>
-                
-                <div id="player-profile-summary" class="profile-summary">
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Level</span>
-                            <span id="player-level" class="stat-value">1</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">XP</span>
-                            <span id="player-xp" class="stat-value">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Badges</span>
-                            <span id="player-badges" class="stat-value">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="certification-cards">
-                    <div class="cert-card" data-cert="fundamentals">
-                        <div class="cert-icon">📚</div>
-                        <h2>Kubernetes Fundamentals</h2>
-                        <p class="cert-description">Master the basics of Kubernetes</p>
-                        <div class="cert-progress">
-                            <div class="progress-bar">
-                                <div id="fundamentals-progress" class="progress-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="progress-text">0% Complete</span>
-                        </div>
-                        <button class="cert-button" id="btn-fundamentals">Start Learning</button>
-                    </div>
-
-                    <div class="cert-card locked" data-cert="cka">
-                        <div class="lock-icon">🔒</div>
-                        <div class="cert-icon">⚙️</div>
-                        <h2>Certified Kubernetes Administrator (CKA)</h2>
-                        <p class="cert-description">Advanced cluster management</p>
-                        <p class="lock-message">Complete Fundamentals to unlock</p>
-                        <div class="cert-progress">
-                            <div class="progress-bar">
-                                <div id="cka-progress" class="progress-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="progress-text">0% Complete</span>
-                        </div>
-                        <button class="cert-button disabled" id="btn-cka" disabled>Locked</button>
-                    </div>
-
-                    <div class="cert-card locked" data-cert="ckad">
-                        <div class="lock-icon">🔒</div>
-                        <div class="cert-icon">💻</div>
-                        <h2>Certified Kubernetes Application Developer (CKAD)</h2>
-                        <p class="cert-description">Build and deploy applications</p>
-                        <p class="lock-message">Complete Fundamentals to unlock</p>
-                        <div class="cert-progress">
-                            <div class="progress-bar">
-                                <div id="ckad-progress" class="progress-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="progress-text">0% Complete</span>
-                        </div>
-                        <button class="cert-button disabled" id="btn-ckad" disabled>Locked</button>
-                    </div>
-                </div>
-
-                <div class="menu-footer">
-                    <button id="btn-profile" class="footer-button">Profile</button>
-                    <button id="btn-leaderboard" class="footer-button">Leaderboard</button>
-                    <button id="btn-settings" class="footer-button">Settings</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Module Selection Screen -->
-        <div id="module-menu" class="screen">
-            <div class="module-container">
-                <div class="module-header">
-                    <button id="btn-back-to-menu" class="back-button">← Back</button>
-                    <h1 id="certification-title">Kubernetes Fundamentals</h1>
-                    <div class="cert-xp-display">
-                        <span>XP Earned: <span id="cert-xp-value">0</span></span>
-                    </div>
-                </div>
-                <div id="module-list" class="module-list"></div>
-            </div>
-        </div>
-
-        <!-- Game Screen -->
-        <div id="game-screen" class="screen">
-            <canvas id="game-canvas"></canvas>
-            
-            <!-- HUD Overlay -->
-            <div id="hud">
-                <div class="hud-top">
-                    <div class="hud-stats">
-                        <div class="stat-display">
-                            <span class="stat-icon">⭐</span>
-                            <span id="hud-xp">XP: 0</span>
-                        </div>
-                        <div class="stat-display">
-                            <span class="stat-icon">📊</span>
-                            <span id="hud-level">Level: 1</span>
-                        </div>
-                        <div class="stat-display">
-                            <span class="stat-icon">🎯</span>
-                            <span id="hud-score">Score: 0</span>
-                        </div>
-                    </div>
-                    <div class="hud-controls">
-                        <button id="btn-pause" class="hud-button">⏸</button>
-                        <button id="btn-tasks" class="hud-button">📋</button>
-                    </div>
-                </div>
-                <div class="hud-bottom">
-                    <div id="challenge-info" class="challenge-info">
-                        <h3 id="challenge-title">Challenge: Getting Started</h3>
-                        <p id="challenge-description">Create your first pod</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Terminal Panel -->
-            <div id="terminal-panel" class="terminal-panel hidden">
-                <div class="terminal-header">
-                    <span>Kubernetes Terminal</span>
-                    <button id="btn-close-terminal" class="close-button">×</button>
-                </div>
-                <div id="terminal-output" class="terminal-output"></div>
-                <div class="terminal-input-container">
-                    <span class="terminal-prompt">$</span>
-                    <input type="text" id="terminal-input" class="terminal-input" placeholder="kubectl ..." autocomplete="off">
-                </div>
-            </div>
-
-            <!-- Tutorial Panel -->
-            <div id="tutorial-panel" class="tutorial-panel hidden">
-                <div class="tutorial-header">
-                    <h2>Tutorial</h2>
-                    <button id="btn-close-tutorial" class="close-button">×</button>
-                </div>
-                <div id="tutorial-content" class="tutorial-content"></div>
-            </div>
-
-            <!-- Task Panel -->
-            <div id="task-panel" class="task-panel hidden">
-                <div class="task-header">
-                    <h2>📋 Tasks</h2>
-                    <button id="btn-close-tasks" class="close-button">×</button>
-                </div>
-                <div id="task-list" class="task-list"></div>
-            </div>
-
-            <!-- Challenge Complete Modal -->
-            <div id="challenge-complete-modal" class="modal hidden">
-                <div class="modal-content">
-                    <div class="celebration-animation"></div>
-                    <h2>Challenge Complete!</h2>
-                    <div class="completion-stats">
-                        <div class="completion-stat">
-                            <span class="stat-label">Score</span>
-                            <span id="completion-score" class="stat-value">0</span>
-                        </div>
-                        <div class="completion-stat">
-                            <span class="stat-label">XP Earned</span>
-                            <span id="completion-xp" class="stat-value">+0</span>
-                        </div>
-                        <div class="completion-stat">
-                            <span class="stat-label">Stars</span>
-                            <div id="completion-stars" class="stars">⭐⭐⭐</div>
-                        </div>
-                    </div>
-                    <button id="btn-next-challenge" class="modal-button">Next Challenge</button>
-                    <button id="btn-back-to-modules" class="modal-button secondary">Back to Modules</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Player Profile Screen -->
-        <div id="profile-screen" class="screen">
-            <div class="profile-container">
-                <div class="profile-header">
-                    <button id="btn-back-from-profile" class="back-button">← Back</button>
-                    <h1>Player Profile</h1>
-                </div>
-                <div class="profile-content">
-                    <div class="profile-stats-section">
-                        <h2>Statistics</h2>
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-icon-large">⭐</div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Total XP</span>
-                                    <span id="profile-total-xp" class="stat-value-large">0</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon-large">📊</div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Level</span>
-                                    <span id="profile-level" class="stat-value-large">1</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon-large">🎯</div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Challenges Completed</span>
-                                    <span id="profile-challenges" class="stat-value-large">0</span>
-                                </div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon-large">🔥</div>
-                                <div class="stat-info">
-                                    <span class="stat-label">Current Streak</span>
-                                    <span id="profile-streak" class="stat-value-large">0 days</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="badges-section">
-                        <h2>Achievement Badges</h2>
-                        <div id="badges-grid" class="badges-grid"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Kubernetes 3D Game...</div>
     </div>
-
-    <script type="module" src="./src/main.js"></script>
+    <canvas id="gameCanvas"></canvas>
+    <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
 

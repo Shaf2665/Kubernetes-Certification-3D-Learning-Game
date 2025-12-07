@@ -1,29 +1,33 @@
 {
-  "name": "kubernetes-certification-game",
-  "version": "1.0.0",
-  "description": "Interactive 3D game for learning Kubernetes certifications (Fundamentals, CKA, CKAD)",
+  "name": "kubernetes-3d-fundamentals-game",
+  "version": "2.0.0",
+  "description": "3D Kubernetes Fundamentals Learning Game built with Babylon.js and TypeScript",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "kubernetes",
-    "game",
-    "learning",
     "3d",
-    "certification",
-    "cka",
-    "ckad"
+    "learning",
+    "game",
+    "babylonjs",
+    "typescript"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "three": "^0.160.0"
+    "@babylonjs/core": "^6.35.0",
+    "@babylonjs/loaders": "^6.35.0",
+    "@babylonjs/materials": "^6.35.0"
   },
   "devDependencies": {
-    "vite": "^5.0.0"
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8"
   }
 }
 
