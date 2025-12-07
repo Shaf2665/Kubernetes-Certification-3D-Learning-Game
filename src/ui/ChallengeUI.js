@@ -478,12 +478,15 @@ export class ChallengeUI {
         
         // Auto-scroll to the current task if it exists
         if (firstIncompleteIndex >= 0) {
-            setTimeout(() => {
-                const currentTaskItem = taskList.querySelector(`[data-task-index="${firstIncompleteIndex}"]`);
-                if (currentTaskItem) {
-                    currentTaskItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            }, 100);
+            // Use requestAnimationFrame to ensure DOM is updated before scrolling
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const currentTaskItem = taskList.querySelector(`[data-task-index="${firstIncompleteIndex}"]`);
+                    if (currentTaskItem) {
+                        currentTaskItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 50);
+            });
         }
     }
 
@@ -528,6 +531,7 @@ export class ChallengeUI {
                 }
                 
                 // Update the panel to show next task
+                // Use a shorter delay to make the transition smoother
                 setTimeout(() => {
                     this.updateTaskPanel();
                     
@@ -538,7 +542,7 @@ export class ChallengeUI {
                             taskItem.classList.remove('task-completed-animation');
                         }
                     }
-                }, 500);
+                }, 300);
             }
         }
     }
