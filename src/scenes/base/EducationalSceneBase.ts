@@ -131,6 +131,62 @@ export abstract class EducationalSceneBase {
                 // Mark module as complete
                 this.learningJourneyManager.completeModule(config.moduleName);
                 
+                // Check if journey is complete
+                if (this.learningJourneyManager.isJourneyComplete() && config.nextScene === 'fundamentals') {
+                    // Show completion popup
+                    setTimeout(() => {
+                        const popup = document.createElement('div');
+                        popup.style.cssText = `
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            background: rgba(0, 0, 0, 0.8);
+                            z-index: 3000;
+                        `;
+                        popup.innerHTML = `
+                            <div style="
+                                background: rgba(0, 0, 0, 0.9);
+                                border: 2px solid #4caf50;
+                                border-radius: 12px;
+                                padding: 40px;
+                                max-width: 500px;
+                                text-align: center;
+                            ">
+                                <div style="font-size: 64px; margin-bottom: 20px;">🎉</div>
+                                <h2 style="color: #4caf50; font-size: 28px; margin: 0 0 15px 0;">
+                                    Learning Journey Complete!
+                                </h2>
+                                <p style="color: #ddd; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                                    You are now ready to begin hands-on Kubernetes learning with Fundamentals missions!
+                                </p>
+                                <button id="btn-close-popup" style="
+                                    background: #4caf50;
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 30px;
+                                    border-radius: 8px;
+                                    font-size: 16px;
+                                    font-weight: bold;
+                                    cursor: pointer;
+                                ">Continue to Missions</button>
+                            </div>
+                        `;
+                        document.body.appendChild(popup);
+                        
+                        const closeBtn = document.getElementById('btn-close-popup');
+                        if (closeBtn) {
+                            closeBtn.addEventListener('click', () => {
+                                popup.remove();
+                            });
+                        }
+                    }, 100);
+                }
+                
                 // Navigate to next scene
                 container.style.display = 'none';
                 document.dispatchEvent(new CustomEvent('scene-change', { 

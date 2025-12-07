@@ -121,6 +121,16 @@ export class MainMenuScene {
                         position: relative;
                         animation: challengePulse 2s infinite;
                     ">⚡ Challenge Mode</button>
+                    <button id="btn-learning-journey" style="
+                        background: rgba(156, 39, 176, 0.3);
+                        color: #9c27b0;
+                        border: 2px solid #9c27b0;
+                        padding: 15px 30px;
+                        border-radius: 8px;
+                        font-size: 18px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">📚 Learning Journey</button>
                 </div>
             </div>
         `;
@@ -183,6 +193,18 @@ export class MainMenuScene {
             newBtn.addEventListener('click', () => {
                 menuContainer.style.display = 'none';
                 document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'challenge' } }));
+            });
+        }
+
+        const learningJourneyBtn = document.getElementById('btn-learning-journey');
+        if (learningJourneyBtn) {
+            const newBtn = learningJourneyBtn.cloneNode(true) as HTMLElement;
+            learningJourneyBtn.parentNode?.replaceChild(newBtn, learningJourneyBtn);
+            
+            newBtn.addEventListener('click', async () => {
+                const { LearningJourneyMap } = await import('../ui/LearningJourneyMap.js');
+                const journeyMap = new LearningJourneyMap();
+                journeyMap.show();
             });
         }
 
