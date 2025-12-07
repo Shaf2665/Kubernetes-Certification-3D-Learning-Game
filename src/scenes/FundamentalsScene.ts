@@ -192,10 +192,10 @@ export class FundamentalsScene {
                         <p id="mission-description" style="margin: 8px 0; line-height: 1.6; color: #ddd;">Loading mission details...</p>
                     </div>
                     
-                    <div class="collapsible-section" data-section="explanation" style="margin: 10px 0;">
-                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('explanation')">
-                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
-                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px;">📚 What You Will Learn</h4>
+                    <div class="collapsible-section" data-section="explanation" data-expanded="false" style="margin: 10px 0; pointer-events: auto;">
+                        <div class="section-header" data-section-id="explanation" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none; pointer-events: auto;">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s; pointer-events: none;">▶</span>
+                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px; pointer-events: none;">📚 What You Will Learn</h4>
                         </div>
                         <div class="section-content" id="mission-explanation-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
                             <div style="padding: 12px; padding-top: 8px;">
@@ -204,10 +204,10 @@ export class FundamentalsScene {
                         </div>
                     </div>
                     
-                    <div class="collapsible-section" data-section="objectives" style="margin: 10px 0;">
-                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('objectives')">
-                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
-                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px;">🎯 Objectives</h4>
+                    <div class="collapsible-section" data-section="objectives" data-expanded="false" style="margin: 10px 0; pointer-events: auto;">
+                        <div class="section-header" data-section-id="objectives" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none; pointer-events: auto;">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s; pointer-events: none;">▶</span>
+                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px; pointer-events: none;">🎯 Objectives</h4>
                         </div>
                         <div class="section-content" id="mission-objectives-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
                             <div style="padding: 12px; padding-top: 8px;">
@@ -216,10 +216,10 @@ export class FundamentalsScene {
                         </div>
                     </div>
                     
-                    <div class="collapsible-section" data-section="hint" style="margin: 10px 0;">
-                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(255, 193, 7, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('hint')">
-                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
-                            <h4 style="color: #ffc107; margin: 0; font-size: 16px;">💡 Hint</h4>
+                    <div class="collapsible-section" data-section="hint" data-expanded="false" style="margin: 10px 0; pointer-events: auto;">
+                        <div class="section-header" data-section-id="hint" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(255, 193, 7, 0.1); border-radius: 4px; user-select: none; pointer-events: auto;">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s; pointer-events: none;">▶</span>
+                            <h4 style="color: #ffc107; margin: 0; font-size: 16px; pointer-events: none;">💡 Hint</h4>
                         </div>
                         <div class="section-content" id="mission-hint-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
                             <div style="padding: 12px; padding-top: 8px;">
@@ -231,10 +231,10 @@ export class FundamentalsScene {
                         </div>
                     </div>
                     
-                    <div class="collapsible-section" data-section="why-matters" style="margin: 10px 0;">
-                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('why-matters')">
-                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
-                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px;">💡 Why This Matters</h4>
+                    <div class="collapsible-section" data-section="why-matters" data-expanded="false" style="margin: 10px 0; pointer-events: auto;">
+                        <div class="section-header" data-section-id="why-matters" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none; pointer-events: auto;">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s; pointer-events: none;">▶</span>
+                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px; pointer-events: none;">💡 Why This Matters</h4>
                         </div>
                         <div class="section-content" id="mission-why-matters-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
                             <div style="padding: 12px; padding-top: 8px;">

@@ -332,6 +332,11 @@ export class MissionsManager {
                 if ((window as any).toggleAllSections) {
                     (window as any).toggleAllSections(false);
                 }
+                // Reattach event listeners after mission update
+                const fundamentalsScene = (window as any).FundamentalsScene;
+                if (fundamentalsScene && fundamentalsScene.setupCollapsibleSections) {
+                    fundamentalsScene.setupCollapsibleSections();
+                }
             }, 100);
 
             // Start hint timer

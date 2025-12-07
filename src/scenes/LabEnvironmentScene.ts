@@ -75,9 +75,9 @@ export class LabEnvironmentScene {
         `;
 
         hud.innerHTML = `
-            <div style="background: rgba(0, 0, 0, 0.7); padding: 15px; border-radius: 8px; border: 2px solid #4a90e2;">
+            <div style="background: rgba(0, 0, 0, 0.85); padding: 20px; border-radius: 8px; border: 2px solid #4a90e2; backdrop-filter: blur(10px);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="color: #4a90e2; margin: 0;">Lab Environment</h2>
+                    <h2 style="color: #4a90e2; margin: 0; font-size: 24px;">Lab Environment</h2>
                     <button id="btn-back-menu-lab" style="
                         background: rgba(74, 144, 226, 0.3);
                         color: #4a90e2;
@@ -86,7 +86,9 @@ export class LabEnvironmentScene {
                         border-radius: 5px;
                         cursor: pointer;
                         pointer-events: auto;
-                    ">Back to Menu</button>
+                        transition: all 0.3s;
+                        font-size: 14px;
+                    " onmouseover="this.style.background='rgba(74, 144, 226, 0.5)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(74, 144, 226, 0.3)'; this.style.transform='scale(1)'">Back to Menu</button>
                 </div>
                 <p style="color: #aaa; margin: 10px 0 0 0; font-size: 14px;">
                     Press <code style="background: rgba(74, 144, 226, 0.2); padding: 2px 6px; border-radius: 3px;">\`</code> to toggle terminal
