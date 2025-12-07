@@ -10,3 +10,47 @@ dist/
 *.swo
 *~
 
+# System files
+AppData/
+Contacts/
+Desktop/
+Documents/
+Downloads/
+Favorites/
+Games/
+Links/
+Music/
+OneDrive/
+Saved Games/
+Searches/
+Videos/
+NTUSER.*
+ntuser.*
+*.TM.blf
+*.TMContainer*
+*.regtrans-ms
+*.LOG*
+
+# Other directories
+.VirtualBox/
+.antigravity/
+.cursor/
+.docker/
+.e4mc_cache/
+.gemini/
+.lmstudio/
+.lunarclient/
+.m2/
+.redhat/
+.ssh/
+.vagrant.d/
+.gitconfig
+.lesshst
+.lmstudio-home-pointer
+.python_history
+
+# Project specific
+multi-container-app/
+welcome-to-docker/
+package-lock.json
+
