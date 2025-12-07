@@ -162,19 +162,31 @@ export class FundamentalsScene {
                         </div>
                     </div>
                     
-                    <button id="btn-show-hint" style="
-                        background: rgba(255, 193, 7, 0.2);
-                        color: #ffc107;
-                        border: 1px solid #ffc107;
-                        padding: 8px 16px;
-                        border-radius: 5px;
-                        cursor: pointer;
-                        pointer-events: auto;
-                        font-size: 14px;
-                        margin-top: 10px;
-                        transition: all 0.3s;
-                        display: none;
-                    " onmouseover="this.style.background='rgba(255, 193, 7, 0.3)'" onmouseout="this.style.background='rgba(255, 193, 7, 0.2)'">💡 Show Hint</button>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button id="btn-show-hint" style="
+                            background: rgba(255, 193, 7, 0.2);
+                            color: #ffc107;
+                            border: 1px solid #ffc107;
+                            padding: 8px 16px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            pointer-events: auto;
+                            font-size: 14px;
+                            transition: all 0.3s;
+                            display: none;
+                        " onmouseover="this.style.background='rgba(255, 193, 7, 0.3)'" onmouseout="this.style.background='rgba(255, 193, 7, 0.2)'">💡 Show Hint</button>
+                        <button id="btn-why-matters" style="
+                            background: rgba(74, 144, 226, 0.2);
+                            color: #4a90e2;
+                            border: 1px solid #4a90e2;
+                            padding: 8px 16px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            pointer-events: auto;
+                            font-size: 14px;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.background='rgba(74, 144, 226, 0.3)'" onmouseout="this.style.background='rgba(74, 144, 226, 0.2)'">💡 Why This Matters</button>
+                    </div>
                 </div>
             </div>
         `;
