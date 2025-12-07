@@ -247,21 +247,62 @@ export class TerminalUI {
     }
 
     private handleScale(resourceType: string, resourceName: string, args: string[]): void {
-        if (resourceType === 'deployment') {
-            const replicas = parseInt(args[0] || '1');
-            const scaled = this.clusterSimulator.scaleDeployment(resourceName, replicas);
-            if (scaled) {
-                this.addOutput(`deployment.apps/${resourceName} scaled to ${replicas}`, 'success');
+        if (resourceType !== 'deployment') {
+            this.addOutput(`Error: Scaling is only supported for Deployments.`, 'error');
+            return;
+        }
+
+        // Extract replicas from arguments
+        const replicaArg = args.find(a => a.startsWith('--replicas'));
+        let replicas: number | null = null;
+
+        // Support both "--replicas=3" and "--replicas 3" syntaxes
+        if (replicaArg) {
+            if (replicaArg.includes('=')) {
+                const value = replicaArg.split('=')[1];
+                replicas = parseInt(value, 10);
             } else {
-                this.addOutput(`Error: deployment "${resourceName}" not found`, 'error');
+                const index = args.indexOf(replicaArg);
+                if (index >= 0 && index < args.length - 1) {
+                    replicas = parseInt(args[index + 1], 10);
+                }
             }
+        }
+
+        // Validate replicas value
+        if (replicas === null || isNaN(replicas)) {
+            this.addOutput(`Error: Replicas must be a number.`, 'error');
+            return;
+        }
+
+        if (replicas < 0) {
+            this.addOutput(`Error: Replicas must be a positive number.`, 'error');
+            return;
+        }
+
+        // Scale the deployment
+        const scaled = this.clusterSimulator.scaleDeployment(resourceName, replicas);
+        if (scaled) {
+            this.addOutput(`deployment.apps/${resourceName} scaled to ${replicas}`, 'success');
+        } else {
+            this.addOutput(`Error: Deployment "${resourceName}" not found.`, 'error');
         }
     }
 
     private extractReplicas(args: string[]): number | null {
-        const replicasIndex = args.indexOf('--replicas');
-        if (replicasIndex >= 0 && replicasIndex < args.length - 1) {
-            return parseInt(args[replicasIndex + 1]);
+        const replicaArg = args.find(a => a.startsWith('--replicas'));
+        if (!replicaArg) {
+            return null;
+        }
+
+        if (replicaArg.includes('=')) {
+            const value = replicaArg.split('=')[1];
+            return parseInt(value, 10);
+        } else {
+            const index = args.indexOf(replicaArg);
+            if (index >= 0 && index < args.length - 1) {
+                return parseInt(args[index + 1], 10);
+            }
         }
         return null;
     }

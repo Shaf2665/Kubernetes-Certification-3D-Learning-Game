@@ -74,7 +74,7 @@ export class FundamentalsMissions {
                 completed: false,
                 xpReward: 150,
                 checkCompletion: (eventType: string, data: any) => {
-                    return eventType === 'deploymentScaled' && data && data.replicas >= 3;
+                    return eventType === 'deploymentScaled' && data && typeof data.newReplicas === 'number' && !isNaN(data.newReplicas) && data.newReplicas >= 3;
                 }
             },
             {

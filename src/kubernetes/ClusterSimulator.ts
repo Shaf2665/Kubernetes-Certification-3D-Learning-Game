@@ -248,13 +248,55 @@ export class ClusterSimulator {
         const deployment = this.deployments.get(name);
         if (!deployment) return false;
 
+        const oldReplicas = deployment.getReplicas();
         deployment.setReplicas(replicas);
+
+        // Update the associated ReplicaSet
+        const replicaSet = deployment.getReplicaSet();
+        if (replicaSet) {
+            replicaSet.setReplicas(replicas);
+        }
+
+        // Get current pods for this deployment
+        const currentPods = deployment.getPods();
+        const currentPodCount = currentPods.length;
+
+        // Create or delete pods to match desired replicas
+        if (replicas > currentPodCount) {
+            // Need to create more pods
+            const podsToCreate = replicas - currentPodCount;
+            for (let i = 0; i < podsToCreate; i++) {
+                this.createPodForDeployment(deployment);
+            }
+        } else if (replicas < currentPodCount) {
+            // Need to delete extra pods
+            const podsToDelete = currentPodCount - replicas;
+            for (let i = 0; i < podsToDelete; i++) {
+                const podToDelete = currentPods[i];
+                if (podToDelete) {
+                    // Remove from deployment
+                    deployment.removePod(podToDelete);
+                    // Remove from ReplicaSet if it exists
+                    if (replicaSet) {
+                        replicaSet.removePod(podToDelete);
+                    }
+                    // Remove from cluster simulator
+                    const podName = podToDelete.getName();
+                    const podEntity = this.pods.get(podName);
+                    if (podEntity) {
+                        podEntity.dispose();
+                        this.pods.delete(podName);
+                    }
+                }
+            }
+        }
         
-        // Emit deployment scaled event
+        // Emit deployment scaled event with newReplicas
         kubeEvents.emit('deploymentScaled', {
             name: name,
             namespace: 'default',
-            replicas: replicas,
+            newReplicas: replicas,
+            oldReplicas: oldReplicas,
             deployment: deployment
         });
         
