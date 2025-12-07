@@ -30,6 +30,25 @@ export class Tutorial {
     generateSteps(module) {
         const steps = [];
         
+        // Check if this is the first module (show welcome tutorial)
+        const isFirstModule = module.id === 1;
+        
+        if (isFirstModule) {
+            // Welcome step for first-time users
+            steps.push({
+                title: '🎮 Welcome to Kubernetes Learning Game!',
+                content: this.formatWelcomeStep(),
+                type: 'welcome'
+            });
+            
+            // How to play step
+            steps.push({
+                title: '📖 How to Play',
+                content: this.formatHowToPlay(),
+                type: 'guide'
+            });
+        }
+        
         // Introduction step
         steps.push({
             title: `Welcome to ${module.title}`,
@@ -56,6 +75,53 @@ export class Tutorial {
         }
 
         return steps;
+    }
+
+    formatWelcomeStep() {
+        return `
+            <div class="tutorial-welcome">
+                <p>Welcome! This interactive 3D game will help you master Kubernetes through hands-on practice.</p>
+                <p><strong>What you'll do:</strong></p>
+                <ul class="tutorial-list">
+                    <li>Complete challenges by typing kubectl commands</li>
+                    <li>Watch your Kubernetes cluster change in 3D</li>
+                    <li>Earn XP, stars, and achievements</li>
+                    <li>Progress through modules to unlock certifications</li>
+                </ul>
+            </div>
+        `;
+    }
+
+    formatHowToPlay() {
+        return `
+            <div class="tutorial-guide">
+                <div class="guide-section">
+                    <h4>🎯 Completing Challenges</h4>
+                    <ul class="tutorial-list">
+                        <li>Read the challenge description in the bottom-left panel</li>
+                        <li>Press <strong>`</strong> (backtick) to open the terminal</li>
+                        <li>Type kubectl commands to complete the task</li>
+                        <li>Watch the 3D cluster update in real-time</li>
+                    </ul>
+                </div>
+                <div class="guide-section">
+                    <h4>⌨️ Controls</h4>
+                    <ul class="tutorial-list">
+                        <li><strong>`</strong> key - Open/Close terminal</li>
+                        <li><strong>⏸</strong> button - Pause game</li>
+                        <li><strong>📋</strong> button - View tasks</li>
+                    </ul>
+                </div>
+                <div class="guide-section">
+                    <h4>⭐ Scoring</h4>
+                    <ul class="tutorial-list">
+                        <li>Complete challenges quickly for more stars</li>
+                        <li>Earn 1-3 stars based on performance</li>
+                        <li>Gain XP to level up</li>
+                    </ul>
+                </div>
+            </div>
+        `;
     }
 
     formatObjectives(objectives) {

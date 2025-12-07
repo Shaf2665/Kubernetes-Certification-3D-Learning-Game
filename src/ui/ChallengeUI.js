@@ -51,6 +51,16 @@ export class ChallengeUI {
                 this.showHint();
             });
         }
+
+        // Task button
+        document.getElementById('btn-tasks')?.addEventListener('click', () => {
+            this.toggleTaskPanel();
+        });
+
+        // Close task panel
+        document.getElementById('btn-close-tasks')?.addEventListener('click', () => {
+            this.hideTaskPanel();
+        });
     }
 
     startModule(module, certificationId) {
@@ -83,6 +93,9 @@ export class ChallengeUI {
         
         // Update UI
         this.updateChallengeDisplay();
+        
+        // Update task panel
+        this.updateTaskPanel();
         
         // Show terminal
         const terminalPanel = document.getElementById('terminal-panel');
@@ -122,6 +135,15 @@ export class ChallengeUI {
         if (!this.currentChallenge) return;
         
         const result = this.currentChallenge.validate(command);
+        
+        // Mark all tasks as complete when challenge is completed
+        if (result.completed && this.currentChallenge.tasks) {
+            this.currentChallenge.tasks.forEach((task, index) => {
+                if (!task.completed) {
+                    this.markTaskComplete(index);
+                }
+            });
+        }
         
         if (result.completed) {
             // Challenge completed!
@@ -233,6 +255,9 @@ export class ChallengeUI {
             completionModal.classList.add('hidden');
         }
         
+        // Hide task panel
+        this.hideTaskPanel();
+        
         // Show module menu
         const event = new CustomEvent('show-screen', {
             detail: { screen: 'module-menu' }
@@ -253,6 +278,103 @@ export class ChallengeUI {
 
     getCurrentChallenge() {
         return this.currentChallenge;
+    }
+
+    parseChallengeIntoTasks(challenge) {
+        const tasks = [];
+        
+        if (!challenge) return tasks;
+        
+        // Parse description into tasks
+        if (challenge.description) {
+            // Split by common separators or create single task
+            const desc = challenge.description.trim();
+            
+            // Check if description contains multiple tasks (separated by commas, semicolons, or newlines)
+            if (desc.includes(',') || desc.includes(';') || desc.includes('\n')) {
+                const parts = desc.split(/[,;\n]/).map(p => p.trim()).filter(p => p);
+                parts.forEach(part => {
+                    tasks.push({
+                        text: part,
+                        completed: false
+                    });
+                });
+            } else {
+                // Single task from description
+                tasks.push({
+                    text: desc,
+                    completed: false
+                });
+            }
+        }
+        
+        // If no tasks from description, create from command
+        if (tasks.length === 0 && challenge.command) {
+            tasks.push({
+                text: `Execute: ${challenge.command}`,
+                completed: false
+            });
+        }
+        
+        return tasks;
+    }
+
+    updateTaskPanel() {
+        if (!this.currentChallenge) {
+            this.hideTaskPanel();
+            return;
+        }
+        
+        const taskList = document.getElementById('task-list');
+        if (!taskList) return;
+        
+        // Get tasks from challenge
+        let tasks = this.currentChallenge.tasks || [];
+        
+        // If no tasks, parse from challenge data
+        if (tasks.length === 0) {
+            tasks = this.parseChallengeIntoTasks(this.currentChallenge);
+            this.currentChallenge.tasks = tasks;
+        }
+        
+        // Render tasks
+        if (tasks.length === 0) {
+            taskList.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No tasks available</p>';
+            return;
+        }
+        
+        taskList.innerHTML = tasks.map((task, index) => `
+            <div class="task-item ${task.completed ? 'completed' : ''}" data-task-index="${index}">
+                <span class="task-checkbox">${task.completed ? '✓' : '○'}</span>
+                <span class="task-text">${task.text}</span>
+            </div>
+        `).join('');
+    }
+
+    toggleTaskPanel() {
+        const taskPanel = document.getElementById('task-panel');
+        if (taskPanel) {
+            taskPanel.classList.toggle('hidden');
+            if (!taskPanel.classList.contains('hidden')) {
+                this.updateTaskPanel();
+            }
+        }
+    }
+
+    hideTaskPanel() {
+        const taskPanel = document.getElementById('task-panel');
+        if (taskPanel) {
+            taskPanel.classList.add('hidden');
+        }
+    }
+
+    markTaskComplete(taskIndex) {
+        if (!this.currentChallenge || !this.currentChallenge.tasks) return;
+        
+        if (taskIndex >= 0 && taskIndex < this.currentChallenge.tasks.length) {
+            this.currentChallenge.tasks[taskIndex].completed = true;
+            this.updateTaskPanel();
+        }
     }
 }
 

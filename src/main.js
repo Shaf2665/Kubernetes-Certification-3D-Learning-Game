@@ -160,12 +160,41 @@ class KubernetesGame {
             overlay.id = 'pause-overlay';
             overlay.className = 'pause-overlay';
             overlay.innerHTML = `
-                <div class="pause-content">
+                <div class="pause-menu">
                     <h2>⏸ Game Paused</h2>
-                    <p>Click the resume button (▶) to continue</p>
+                    <div class="pause-menu-buttons">
+                        <button id="btn-resume-game" class="pause-menu-btn resume-btn">▶ Resume</button>
+                        <button id="btn-pause-main-menu" class="pause-menu-btn main-menu-btn">🏠 Main Menu</button>
+                    </div>
                 </div>
             `;
             document.getElementById('game-screen').appendChild(overlay);
+            
+            // Setup button handlers
+            document.getElementById('btn-resume-game')?.addEventListener('click', () => {
+                if (this.gameEngine) {
+                    this.gameEngine.togglePause();
+                    const pauseButton = document.getElementById('btn-pause');
+                    if (pauseButton) {
+                        pauseButton.textContent = '⏸';
+                        pauseButton.title = 'Pause Game';
+                    }
+                    this.hidePauseOverlay();
+                }
+            });
+            
+            document.getElementById('btn-pause-main-menu')?.addEventListener('click', () => {
+                if (this.gameEngine) {
+                    this.gameEngine.resume();
+                    const pauseButton = document.getElementById('btn-pause');
+                    if (pauseButton) {
+                        pauseButton.textContent = '⏸';
+                        pauseButton.title = 'Pause Game';
+                    }
+                }
+                this.hidePauseOverlay();
+                this.showScreen('main-menu');
+            });
         }
         overlay.classList.remove('hidden');
     }

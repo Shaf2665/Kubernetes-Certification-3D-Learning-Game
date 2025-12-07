@@ -122,7 +122,10 @@
                             <span id="hud-score">Score: 0</span>
                         </div>
                     </div>
-                    <button id="btn-pause" class="hud-button">⏸</button>
+                    <div class="hud-controls">
+                        <button id="btn-pause" class="hud-button">⏸</button>
+                        <button id="btn-tasks" class="hud-button">📋</button>
+                    </div>
                 </div>
                 <div class="hud-bottom">
                     <div id="challenge-info" class="challenge-info">
@@ -152,6 +155,15 @@
                     <button id="btn-close-tutorial" class="close-button">×</button>
                 </div>
                 <div id="tutorial-content" class="tutorial-content"></div>
+            </div>
+
+            <!-- Task Panel -->
+            <div id="task-panel" class="task-panel hidden">
+                <div class="task-header">
+                    <h2>📋 Tasks</h2>
+                    <button id="btn-close-tasks" class="close-button">×</button>
+                </div>
+                <div id="task-list" class="task-list"></div>
             </div>
 
             <!-- Challenge Complete Modal -->

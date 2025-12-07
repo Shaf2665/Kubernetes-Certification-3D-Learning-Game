@@ -24,6 +24,7 @@ export class ChallengeBase {
         this.attempts = 0;
         this.hintsUsed = 0;
         this.xpEarned = undefined; // Store XP earned when completed
+        this.tasks = []; // Task list for this challenge
     }
 
     start() {
