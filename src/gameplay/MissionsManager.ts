@@ -3,6 +3,8 @@ import { ClusterSimulator } from '../kubernetes/ClusterSimulator.js';
 import { FundamentalsMissions } from './FundamentalsMissions.js';
 import { ProgressTracker } from './ProgressTracker.js';
 import { kubeEvents } from '../kubernetes/KubeEventEmitter.js';
+import { ProgressionSystem } from './ProgressionSystem.js';
+import { CampaignManager } from './CampaignManager.js';
 
 export interface Mission {
     id: number;
@@ -13,6 +15,9 @@ export interface Mission {
     objectives: string[];       // Bullet points of what user should learn
     hint: string;              // A small nudge if user is stuck
     exampleCommand?: string;   // Optional example kubectl command
+    storyIntro?: string;       // Story introduction for the mission
+    chapter?: number;          // Chapter this mission belongs to
+    xp?: number;               // XP reward (defaults to xpReward if not set)
     completed: boolean;
     xpReward: number;
     checkCompletion?: (eventType: string, data: any) => boolean;
@@ -26,6 +31,8 @@ export class MissionsManager {
     private missions: Mission[] = [];
     private currentMissionIndex: number = 0;
     private progressTracker: ProgressTracker;
+    private progressionSystem: ProgressionSystem;
+    private campaignManager: CampaignManager;
     private hintTimer: number | null = null;
     private tutorialPopup: any;
     private whyThisMattersPanel: any;
@@ -34,7 +41,18 @@ export class MissionsManager {
     constructor(_scene: Scene, clusterSimulator: ClusterSimulator) {
         this.clusterSimulator = clusterSimulator;
         this.progressTracker = new ProgressTracker();
+        this.progressionSystem = new ProgressionSystem();
+        this.campaignManager = new CampaignManager();
         this.initializeUIComponents();
+        this.setupProgressionCallbacks();
+    }
+
+    private setupProgressionCallbacks(): void {
+        // Update campaign manager when level changes
+        this.progressionSystem.onLevelUp((level) => {
+            this.campaignManager.updateLevel(level);
+            this.showLevelUpAnimation(level);
+        });
     }
 
     private async initializeUIComponents(): Promise<void> {
@@ -204,6 +222,15 @@ export class MissionsManager {
 
         console.log(`[MissionsManager] Completing mission ${mission.id}: ${mission.title}`);
         mission.completed = true;
+        
+        // Award XP through progression system
+        const xpAmount = mission.xp || mission.xpReward || 50;
+        this.progressionSystem.addXP(xpAmount);
+        
+        // Update campaign progress
+        this.campaignManager.completeMission(mission.id, xpAmount);
+        
+        // Update progress tracker
         this.progressTracker.addXP(mission.xpReward);
         this.progressTracker.completeMission(mission.id);
 
@@ -214,11 +241,14 @@ export class MissionsManager {
 
         // Play completion animation
         if (this.completionAnimation) {
-            this.completionAnimation.show(mission.title, mission.xpReward);
+            this.completionAnimation.show(mission.title, xpAmount);
         }
 
         // Play success sound
         this.playSuccessSound();
+
+        // Show XP gain notification
+        this.showXPGainNotification(xpAmount);
 
         // Update UI immediately
         this.updateMissionDisplay();
@@ -246,10 +276,6 @@ export class MissionsManager {
         const missionHintEl = document.getElementById('mission-hint');
         const missionExampleEl = document.getElementById('mission-example');
         const missionExampleCommandEl = document.getElementById('mission-example-command');
-        const showHintBtn = document.getElementById('btn-show-hint');
-        const explanationSection = document.getElementById('mission-explanation-section');
-        const objectivesSection = document.getElementById('mission-objectives-section');
-        const hintSection = document.getElementById('mission-hint-section');
 
         if (!missionTitleEl || !missionDescriptionEl || !missionProgressEl) {
             console.warn('[MissionsManager] HUD elements not found, retrying in 100ms...');
@@ -266,14 +292,13 @@ export class MissionsManager {
             missionDescriptionEl.textContent = currentMission.description;
             missionProgressEl.textContent = `${completedCount}/${this.missions.length}`;
 
-            // Update explanation
-            if (missionExplanationEl && explanationSection) {
+            // Update explanation (collapsible)
+            if (missionExplanationEl) {
                 missionExplanationEl.textContent = currentMission.explanation;
-                explanationSection.style.display = 'block';
             }
 
-            // Update objectives
-            if (missionObjectivesEl && objectivesSection) {
+            // Update objectives (collapsible)
+            if (missionObjectivesEl) {
                 missionObjectivesEl.innerHTML = '';
                 currentMission.objectives.forEach(objective => {
                     const li = document.createElement('li');
@@ -281,18 +306,9 @@ export class MissionsManager {
                     li.style.marginBottom = '4px';
                     missionObjectivesEl.appendChild(li);
                 });
-                objectivesSection.style.display = 'block';
             }
 
-            // Reset hint display (hidden by default)
-            if (hintSection) {
-                hintSection.style.display = 'none';
-            }
-            if (showHintBtn) {
-                showHintBtn.style.display = 'block';
-            }
-
-            // Set up hint content (but keep it hidden)
+            // Update hint (collapsible)
             if (missionHintEl) {
                 missionHintEl.textContent = currentMission.hint;
             }
@@ -305,13 +321,30 @@ export class MissionsManager {
                 missionExampleEl.style.display = 'none';
             }
 
+            // Update "Why This Matters" (collapsible)
+            const whyMattersEl = document.getElementById('mission-why-matters');
+            if (whyMattersEl) {
+                whyMattersEl.textContent = currentMission.whyThisMatters;
+            }
+
+            // Collapse all sections when new mission starts (except title & description)
+            setTimeout(() => {
+                if ((window as any).toggleAllSections) {
+                    (window as any).toggleAllSections(false);
+                }
+            }, 100);
+
             // Start hint timer
             this.startHintTimer();
 
-            // Show tutorial popup for new mission
+            // Show story intro or tutorial popup for new mission
             setTimeout(() => {
                 if (this.tutorialPopup) {
-                    this.tutorialPopup.show(currentMission.title, currentMission.explanation);
+                    if (currentMission.storyIntro) {
+                        this.tutorialPopup.showStoryIntro(currentMission.title, currentMission.storyIntro);
+                    } else {
+                        this.tutorialPopup.show(currentMission.title, currentMission.explanation);
+                    }
                 }
             }, 500);
 
@@ -413,6 +446,117 @@ export class MissionsManager {
 
     getProgressTracker(): ProgressTracker {
         return this.progressTracker;
+    }
+
+    getProgressionSystem(): ProgressionSystem {
+        return this.progressionSystem;
+    }
+
+    getCampaignManager(): CampaignManager {
+        return this.campaignManager;
+    }
+
+    private showLevelUpAnimation(level: number): void {
+        // Create level up animation overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 700;
+            pointer-events: none;
+        `;
+
+        overlay.innerHTML = `
+            <div style="text-align: center; animation: levelUpFadeIn 0.5s ease-out;">
+                <div style="font-size: 80px; margin-bottom: 20px; animation: bounce 0.6s ease-out;">⭐</div>
+                <h1 style="color: #ffc107; font-size: 48px; margin: 0 0 10px 0; text-shadow: 0 0 20px rgba(255, 193, 7, 0.5);">
+                    Level Up!
+                </h1>
+                <p style="color: #fff; font-size: 32px; margin: 0;">
+                    You reached Level ${level}!
+                </p>
+            </div>
+        `;
+
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes levelUpFadeIn {
+                from { opacity: 0; transform: scale(0.8); }
+                to { opacity: 1; transform: scale(1); }
+            }
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-30px); }
+            }
+        `;
+        if (!document.head.querySelector('#levelup-animations')) {
+            style.id = 'levelup-animations';
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(overlay);
+
+        // Play level up sound
+        try {
+            const audio = new Audio('./assets/sounds/level_up.mp3');
+            audio.volume = 0.6;
+            audio.play().catch(() => {});
+        } catch (error) {
+            console.log('[MissionsManager] Could not play level up sound:', error);
+        }
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            overlay.style.animation = 'levelUpFadeIn 0.3s ease-out reverse';
+            setTimeout(() => overlay.remove(), 300);
+        }, 3000);
+    }
+
+    private showXPGainNotification(xp: number): void {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(74, 144, 226, 0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 2px solid #4a90e2;
+            z-index: 600;
+            pointer-events: none;
+            animation: xpNotificationSlide 0.5s ease-out, xpNotificationFadeOut 0.5s ease-out 2s;
+        `;
+        notification.textContent = `+${xp} XP`;
+
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes xpNotificationSlide {
+                from { transform: translateX(100px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes xpNotificationFadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; transform: translateX(50px); }
+            }
+        `;
+        if (!document.head.querySelector('#xp-notification-animations')) {
+            style.id = 'xp-notification-animations';
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => notification.remove(), 2500);
     }
 
     private playSuccessSound(): void {

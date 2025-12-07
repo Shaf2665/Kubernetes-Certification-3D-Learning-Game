@@ -2,6 +2,8 @@ import { Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, DirectionalL
 import { ClusterSimulator } from '../kubernetes/ClusterSimulator.js';
 import { MissionsManager } from '../gameplay/MissionsManager.js';
 import { TerminalUI } from '../ui/TerminalUI.js';
+import { XPLevelDisplay } from '../ui/XPLevelDisplay.js';
+import { RewardsPanel } from '../ui/RewardsPanel.js';
 
 /**
  * Main fundamentals learning scene
@@ -10,6 +12,8 @@ export class FundamentalsScene {
     private static clusterSimulator: ClusterSimulator | null = null;
     private static missionsManager: MissionsManager | null = null;
     private static terminalUI: TerminalUI | null = null;
+    private static xpLevelDisplay: XPLevelDisplay | null = null;
+    private static rewardsPanel: RewardsPanel | null = null;
 
     static async create(engine: Engine): Promise<Scene> {
         console.log('[FundamentalsScene] Initializing FundamentalsScene...');
@@ -83,6 +87,50 @@ export class FundamentalsScene {
                 await this.missionsManager.init();
                 console.log('[FundamentalsScene] MissionsManager initialized successfully');
                 
+                // Create XP/Level display
+                const progressionSystem = this.missionsManager.getProgressionSystem();
+                this.xpLevelDisplay = new XPLevelDisplay(progressionSystem);
+                const xpDisplay = this.xpLevelDisplay.create();
+                document.body.appendChild(xpDisplay);
+
+                // Create Rewards panel
+                this.rewardsPanel = new RewardsPanel(progressionSystem);
+                
+                // Add Rewards button to HUD
+                const rewardsBtn = document.createElement('button');
+                rewardsBtn.textContent = '🏆 Rewards';
+                rewardsBtn.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 280px;
+                    background: rgba(74, 144, 226, 0.3);
+                    color: #4a90e2;
+                    border: 1px solid #4a90e2;
+                    padding: 8px 16px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    pointer-events: auto;
+                    font-size: 14px;
+                    z-index: 201;
+                    transition: all 0.3s;
+                `;
+                rewardsBtn.onmouseover = () => { rewardsBtn.style.background = 'rgba(74, 144, 226, 0.5)'; };
+                rewardsBtn.onmouseout = () => { rewardsBtn.style.background = 'rgba(74, 144, 226, 0.3)'; };
+                rewardsBtn.onclick = () => {
+                    if (this.rewardsPanel) {
+                        this.rewardsPanel.toggle();
+                    }
+                };
+                document.body.appendChild(rewardsBtn);
+
+                // Setup XP gain callback
+                progressionSystem.onXPGained((xp: number, _total: number) => {
+                    if (this.xpLevelDisplay) {
+                        this.xpLevelDisplay.showXPGain(xp);
+                        this.xpLevelDisplay.update();
+                    }
+                });
+                
                 // Update display after missions are loaded
                 this.missionsManager.updateMissionDisplay();
             } catch (err) {
@@ -137,45 +185,66 @@ export class FundamentalsScene {
                     " onmouseover="this.style.background='rgba(74, 144, 226, 0.5)'" onmouseout="this.style.background='rgba(74, 144, 226, 0.3)'">Back to Menu</button>
                 </div>
                 
-                <div id="mission-info" style="color: #fff;">
-                    <div style="margin-bottom: 15px;">
+                <div id="mission-info" style="color: #fff; max-height: 70vh; overflow-y: auto; padding-right: 5px;">
+                    <div style="margin-bottom: 15px; position: sticky; top: 0; background: rgba(0, 0, 0, 0.85); padding-bottom: 10px; z-index: 10;">
                         <p style="margin: 5px 0; font-size: 14px; color: #aaa;"><strong>Progress:</strong> <span id="mission-progress">0/15</span></p>
                         <h3 id="mission-title" style="color: #4a90e2; margin: 10px 0; font-size: 20px;">Loading...</h3>
                         <p id="mission-description" style="margin: 8px 0; line-height: 1.6; color: #ddd;">Loading mission details...</p>
                     </div>
                     
-                    <div id="mission-explanation-section" style="margin: 15px 0; padding: 12px; background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2; border-radius: 4px; display: none;">
-                        <h4 style="color: #4a90e2; margin: 0 0 8px 0; font-size: 16px;">📚 What You Will Learn</h4>
-                        <p id="mission-explanation" style="margin: 0; line-height: 1.6; color: #ccc; font-size: 14px;"></p>
-                    </div>
-                    
-                    <div id="mission-objectives-section" style="margin: 15px 0; display: none;">
-                        <h4 style="color: #4a90e2; margin: 0 0 8px 0; font-size: 16px;">🎯 Objectives</h4>
-                        <ul id="mission-objectives" style="margin: 0; padding-left: 20px; color: #ddd; line-height: 1.8; font-size: 14px;"></ul>
-                    </div>
-                    
-                    <div id="mission-hint-section" style="margin: 15px 0; padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; display: none;">
-                        <h4 style="color: #ffc107; margin: 0 0 8px 0; font-size: 16px;">💡 Hint</h4>
-                        <p id="mission-hint" style="margin: 0; line-height: 1.6; color: #ffd54f; font-size: 14px;"></p>
-                        <div id="mission-example" style="margin-top: 8px; padding: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; color: #4a90e2; display: none;">
-                            <strong style="color: #4a90e2;">Example:</strong> <code id="mission-example-command" style="color: #00ff00;"></code>
+                    <div class="collapsible-section" data-section="explanation" style="margin: 10px 0;">
+                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('explanation')">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
+                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px;">📚 What You Will Learn</h4>
+                        </div>
+                        <div class="section-content" id="mission-explanation-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
+                            <div style="padding: 12px; padding-top: 8px;">
+                                <p id="mission-explanation" style="margin: 0; line-height: 1.6; color: #ccc; font-size: 14px;"></p>
+                            </div>
                         </div>
                     </div>
                     
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button id="btn-show-hint" style="
-                            background: rgba(255, 193, 7, 0.2);
-                            color: #ffc107;
-                            border: 1px solid #ffc107;
-                            padding: 8px 16px;
-                            border-radius: 5px;
-                            cursor: pointer;
-                            pointer-events: auto;
-                            font-size: 14px;
-                            transition: all 0.3s;
-                            display: none;
-                        " onmouseover="this.style.background='rgba(255, 193, 7, 0.3)'" onmouseout="this.style.background='rgba(255, 193, 7, 0.2)'">💡 Show Hint</button>
-                        <button id="btn-why-matters" style="
+                    <div class="collapsible-section" data-section="objectives" style="margin: 10px 0;">
+                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('objectives')">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
+                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px;">🎯 Objectives</h4>
+                        </div>
+                        <div class="section-content" id="mission-objectives-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
+                            <div style="padding: 12px; padding-top: 8px;">
+                                <ul id="mission-objectives" style="margin: 0; padding-left: 20px; color: #ddd; line-height: 1.8; font-size: 14px;"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="collapsible-section" data-section="hint" style="margin: 10px 0;">
+                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(255, 193, 7, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('hint')">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
+                            <h4 style="color: #ffc107; margin: 0; font-size: 16px;">💡 Hint</h4>
+                        </div>
+                        <div class="section-content" id="mission-hint-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
+                            <div style="padding: 12px; padding-top: 8px;">
+                                <p id="mission-hint" style="margin: 0; line-height: 1.6; color: #ffd54f; font-size: 14px;"></p>
+                                <div id="mission-example" style="margin-top: 8px; padding: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; color: #4a90e2; display: none;">
+                                    <strong style="color: #4a90e2;">Example:</strong> <code id="mission-example-command" style="color: #00ff00;"></code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="collapsible-section" data-section="why-matters" style="margin: 10px 0;">
+                        <div class="section-header" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; user-select: none;" onclick="toggleSection('why-matters')">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s;">▶</span>
+                            <h4 style="color: #4a90e2; margin: 0; font-size: 16px;">💡 Why This Matters</h4>
+                        </div>
+                        <div class="section-content" id="mission-why-matters-section" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
+                            <div style="padding: 12px; padding-top: 8px;">
+                                <p id="mission-why-matters" style="margin: 0; line-height: 1.6; color: #ccc; font-size: 14px;"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(74, 144, 226, 0.3);">
+                        <button id="btn-toggle-all" style="
                             background: rgba(74, 144, 226, 0.2);
                             color: #4a90e2;
                             border: 1px solid #4a90e2;
@@ -185,7 +254,8 @@ export class FundamentalsScene {
                             pointer-events: auto;
                             font-size: 14px;
                             transition: all 0.3s;
-                        " onmouseover="this.style.background='rgba(74, 144, 226, 0.3)'" onmouseout="this.style.background='rgba(74, 144, 226, 0.2)'">💡 Why This Matters</button>
+                            flex: 1;
+                        " onmouseover="this.style.background='rgba(74, 144, 226, 0.3)'" onmouseout="this.style.background='rgba(74, 144, 226, 0.2)'">Expand All</button>
                     </div>
                 </div>
             </div>
