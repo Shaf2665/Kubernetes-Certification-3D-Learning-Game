@@ -13,7 +13,12 @@ export class KubernetesManager {
         this.services = new Map();
         this.configMaps = new Map();
         this.secrets = new Map();
+        this.visualEffects = null;
         this.initCluster();
+    }
+
+    setVisualEffects(visualEffects) {
+        this.visualEffects = visualEffects;
     }
 
     initCluster() {
@@ -99,6 +104,13 @@ export class KubernetesManager {
         const pod = new Pod(name, node);
         this.pods.push(pod);
         node.addPod(pod);
+        
+        // Visual effect
+        if (this.visualEffects) {
+            const position = pod.container.position.clone();
+            this.visualEffects.createCreationEffect(position);
+            this.visualEffects.createPulseEffect(pod.mesh, 0x00ff00);
+        }
         
         // Simulate pod starting
         setTimeout(() => {
@@ -207,6 +219,12 @@ export class KubernetesManager {
     deletePod(name) {
         const pod = this.pods.find(p => p.name === name);
         if (pod) {
+            // Visual effect before deletion
+            if (this.visualEffects) {
+                const position = pod.container.position.clone();
+                this.visualEffects.createDeletionEffect(position);
+            }
+            
             pod.updateStatus('Terminating');
             setTimeout(() => {
                 pod.node.removePod(pod);

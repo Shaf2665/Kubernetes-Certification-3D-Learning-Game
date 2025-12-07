@@ -74,6 +74,9 @@ export class CommandTerminal {
         if (result.success) {
             this.log(result.message, 'success');
             
+            // Visual feedback for successful commands
+            this.showSuccessFeedback();
+            
             // If there's data, display it
             if (result.data) {
                 if (Array.isArray(result.data)) {
@@ -87,6 +90,7 @@ export class CommandTerminal {
             }
         } else {
             this.log(result.message, 'error');
+            this.showErrorFeedback();
         }
 
         this.log(''); // Empty line for spacing
@@ -109,6 +113,26 @@ export class CommandTerminal {
 
     getKubernetesManager() {
         return this.k8sManager;
+    }
+
+    showSuccessFeedback() {
+        const terminal = document.getElementById('terminal-panel');
+        if (terminal) {
+            terminal.classList.add('command-success');
+            setTimeout(() => {
+                terminal.classList.remove('command-success');
+            }, 300);
+        }
+    }
+
+    showErrorFeedback() {
+        const terminal = document.getElementById('terminal-panel');
+        if (terminal) {
+            terminal.classList.add('command-error');
+            setTimeout(() => {
+                terminal.classList.remove('command-error');
+            }, 300);
+        }
     }
 }
 

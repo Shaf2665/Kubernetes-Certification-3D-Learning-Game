@@ -643,3 +643,280 @@ body {
     background: var(--primary-color);
 }
 
+/* Object Tooltip */
+.object-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 10px 15px;
+    color: var(--text-primary);
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.object-tooltip.hidden {
+    display: none;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.object-tooltip strong {
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Resource Info Panel */
+.resource-info-panel {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    width: 350px;
+    max-width: 90vw;
+    max-height: calc(100vh - 100px);
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid var(--primary-color);
+    border-radius: 15px;
+    z-index: 300;
+    pointer-events: auto;
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.resource-info-panel.hidden {
+    display: none;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.resource-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 2px solid var(--primary-color);
+    background: rgba(74, 144, 226, 0.1);
+}
+
+.resource-info-header h3 {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 20px;
+}
+
+.close-info-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.close-info-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(90deg);
+}
+
+.resource-info-content {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+.info-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(74, 144, 226, 0.05);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 5px;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.status-running {
+    color: var(--success-color);
+}
+
+.status-pending {
+    color: var(--warning-color);
+}
+
+.status-failed {
+    color: var(--error-color);
+}
+
+.status-terminating {
+    color: #ff8800;
+}
+
+.pod-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.pod-list li {
+    padding: 5px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pod-list li:last-child {
+    border-bottom: none;
+}
+
+/* Camera Controls Hint */
+.camera-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+    padding: 10px 20px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    z-index: 100;
+    pointer-events: none;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    10%, 90% { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Visual Feedback Animations */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+.resource-created {
+    animation: pulse 0.5s ease-in-out;
+}
+
+.resource-deleted {
+    animation: pulse 0.5s ease-in-out reverse;
+}
+
+/* Terminal Visual Feedback */
+.terminal-panel.command-success {
+    border-color: var(--success-color);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    animation: terminalPulse 0.3s ease-out;
+}
+
+.terminal-panel.command-error {
+    border-color: var(--error-color);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+    animation: terminalShake 0.3s ease-out;
+}
+
+@keyframes terminalPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+@keyframes terminalShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Improved Button Hover Effects */
+.hud-button:hover {
+    background: var(--primary-color);
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(74, 144, 226, 0.6);
+}
+
+/* Challenge Info Animation */
+.challenge-info {
+    transition: all 0.3s;
+}
+
+.challenge-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+}
+
+/* Task Item Hover */
+.task-item:hover {
+    background: rgba(74, 144, 226, 0.2);
+    transform: translateX(5px);
+    transition: all 0.2s;
+}
+
+/* Smooth Transitions */
+* {
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+/* Loading Animation */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+

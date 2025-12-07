@@ -6,6 +6,9 @@ import { ModuleMenu } from './ui/ModuleMenu.js';
 import { GameEngine } from './game/GameEngine.js';
 import { SceneManager } from './game/SceneManager.js';
 import { CommandTerminal } from './ui/CommandTerminal.js';
+import { InteractionManager } from './game/InteractionManager.js';
+import { CameraController } from './game/CameraController.js';
+import { VisualEffects } from './game/VisualEffects.js';
 
 /**
  * Main application entry point
@@ -20,6 +23,8 @@ class KubernetesGame {
         this.gameEngine = null;
         this.sceneManager = null;
         this.terminal = null;
+        this.interactionManager = null;
+        this.cameraController = null;
         this.currentScreen = 'main-menu';
         
         this.init();
@@ -32,13 +37,39 @@ class KubernetesGame {
             this.gameEngine = new GameEngine(canvas);
             this.sceneManager = new SceneManager(this.gameEngine);
             
+            // Initialize camera controller
+            this.cameraController = new CameraController(this.gameEngine.getCamera(), canvas);
+            this.gameEngine.setControls(this.cameraController);
+            
             // Initialize terminal
             this.terminal = new CommandTerminal(this.sceneManager, this.gameSystem);
+            
+            // Initialize visual effects
+            const visualEffects = new VisualEffects(this.gameEngine.getScene());
+            if (this.terminal && this.terminal.getKubernetesManager()) {
+                this.terminal.getKubernetesManager().setVisualEffects(visualEffects);
+            }
+            
+            // Initialize interaction manager (after terminal so we have k8sManager)
+            if (this.terminal && this.terminal.getKubernetesManager()) {
+                this.interactionManager = new InteractionManager(
+                    this.gameEngine.getCamera(),
+                    this.gameEngine.getScene(),
+                    this.gameEngine.getRenderer(),
+                    this.terminal.getKubernetesManager()
+                );
+            }
             
             // Setup game engine update loop
             this.gameEngine.setUpdateCallback((delta) => {
                 if (this.terminal && this.terminal.getKubernetesManager()) {
                     this.terminal.getKubernetesManager().update(delta);
+                }
+                if (this.interactionManager) {
+                    this.interactionManager.update();
+                }
+                if (visualEffects) {
+                    visualEffects.update(delta);
                 }
             });
         }
@@ -81,8 +112,35 @@ class KubernetesGame {
         // Setup global event listeners
         this.setupGlobalListeners();
         
-        // Show main menu
+            // Show main menu
         this.showScreen('main-menu');
+        
+        // Show camera controls hint after a delay
+        setTimeout(() => {
+            this.showCameraHint();
+        }, 3000);
+    }
+
+    showCameraHint() {
+        // Only show on game screen
+        if (this.currentScreen !== 'game-screen') return;
+        
+        let hint = document.getElementById('camera-hint');
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.id = 'camera-hint';
+            hint.className = 'camera-hint';
+            hint.innerHTML = '💡 Drag to rotate • Scroll to zoom • Click objects to inspect';
+            document.getElementById('game-screen').appendChild(hint);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (hint) {
+                    hint.style.animation = 'fadeOut 1s ease-out forwards';
+                    setTimeout(() => hint.remove(), 1000);
+                }
+            }, 5000);
+        }
     }
 
     async setupTerminalChallengeIntegration() {
