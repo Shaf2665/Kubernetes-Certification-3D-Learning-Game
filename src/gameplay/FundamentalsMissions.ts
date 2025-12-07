@@ -1,7 +1,7 @@
 import { Mission } from './MissionsManager.js';
 
 /**
- * Defines all 15 Kubernetes Fundamentals missions with educational content
+ * Defines all 15 Kubernetes Fundamentals missions with full educational content
  */
 export class FundamentalsMissions {
     static getMissions(): Mission[] {
@@ -10,14 +10,15 @@ export class FundamentalsMissions {
             {
                 id: 1,
                 title: 'Create Your First Pod',
-                description: 'Learn how to create the smallest deployable object in Kubernetes.',
-                explanation: 'Pods are the fundamental execution units in Kubernetes. A Pod runs one or more containers and abstracts networking and storage management. Understanding Pods is the foundation of everything else in Kubernetes. Each Pod gets its own IP address and can communicate with other Pods in the cluster.',
+                description: 'Pods are the smallest deployable units in Kubernetes.',
+                explanation: 'A Pod wraps one or more containers and includes networking and storage context. Pods are the fundamental building blocks of Kubernetes applications. Each Pod gets its own IP address and can contain one or more containers that share storage and network resources.',
+                whyThisMatters: 'Everything in Kubernetes runs inside Pods. They are the building blocks of the entire system. Understanding Pods is essential because all other Kubernetes resources (Deployments, Services, etc.) ultimately manage Pods.',
                 objectives: [
-                    'Understand what a Pod is and its role in Kubernetes',
-                    'Learn how Pods relate to containers',
-                    'Use kubectl to create a real Pod in the simulator'
+                    'Understand what a Pod is',
+                    'Create a Pod using kubectl',
+                    'See the Pod appear in the 3D cluster'
                 ],
-                hint: 'Pods are created using kubectl create pod. You need to specify a name and an image.',
+                hint: 'Try: kubectl create pod mypod --image=nginx',
                 exampleCommand: 'kubectl create pod mypod --image=nginx',
                 completed: false,
                 xpReward: 100,
@@ -28,16 +29,15 @@ export class FundamentalsMissions {
             {
                 id: 2,
                 title: 'Scale a Deployment',
-                description: 'Create a deployment and scale it to multiple replicas to ensure high availability.',
-                explanation: 'Deployments manage ReplicaSets, which in turn manage Pods. Scaling a Deployment allows you to run multiple instances of your application, providing redundancy and load distribution. When you scale up, Kubernetes creates new Pods. When you scale down, it terminates excess Pods gracefully.',
+                description: 'Deployments manage Pods and ensure the desired number of replicas are running.',
+                explanation: 'Deployments use ReplicaSets to maintain Pod count automatically. When you scale a Deployment, Kubernetes creates or removes Pods to match your desired state. This provides high availability and load distribution across your application.',
+                whyThisMatters: 'Deployments provide self-healing, rolling updates, and stable app management. In production, you need multiple replicas to handle traffic and survive failures. Scaling is a fundamental operation for maintaining application availability.',
                 objectives: [
-                    'Create a Deployment using kubectl',
-                    'Understand how Deployments manage Pod replicas',
-                    'Scale the Deployment to 3 or more replicas',
-                    'Observe how Kubernetes maintains the desired state'
+                    'Create a Deployment',
+                    'Scale it up using kubectl'
                 ],
-                hint: 'First create a deployment, then use kubectl scale to increase the number of replicas. The command format is: kubectl scale deployment <name> --replicas=<number>',
-                exampleCommand: 'kubectl scale deployment myapp --replicas=3',
+                hint: 'Try: kubectl scale deployment mydeploy --replicas=3',
+                exampleCommand: 'kubectl scale deployment mydeploy --replicas=3',
                 completed: false,
                 xpReward: 150,
                 checkCompletion: (eventType: string, data: any) => {
@@ -46,17 +46,17 @@ export class FundamentalsMissions {
             },
             {
                 id: 3,
-                title: 'Fix a CrashLoopBackOff Pod',
-                description: 'Identify and resolve a Pod that is failing to start correctly.',
-                explanation: 'CrashLoopBackOff occurs when a container in a Pod repeatedly crashes. Kubernetes keeps trying to restart it, but it fails again. Common causes include: application errors, missing environment variables, incorrect image configuration, or resource constraints. Understanding how to diagnose and fix these issues is crucial for maintaining healthy applications.',
+                title: 'Fix a CrashLoopBackOff',
+                description: 'Some Pods crash repeatedly due to configuration or runtime errors.',
+                explanation: 'CrashLoopBackOff indicates repeated failure; debugging is key. This happens when a container starts, crashes, and Kubernetes keeps trying to restart it. Common causes include application errors, missing environment variables, incorrect image configuration, or resource constraints.',
+                whyThisMatters: 'Understanding Pod failures is critical to troubleshooting real clusters. In production, you\'ll encounter failing Pods regularly. Knowing how to diagnose and fix them quickly is essential for maintaining system reliability.',
                 objectives: [
-                    'Recognize CrashLoopBackOff status in Pods',
-                    'Understand common causes of container crashes',
-                    'Learn how to inspect Pod logs and events',
-                    'Fix the issue and get the Pod running'
+                    'Identify a failing Pod',
+                    'Check logs',
+                    'Fix and recreate the Pod'
                 ],
-                hint: 'Check the Pod status and logs to understand why it\'s crashing. Common fixes include correcting environment variables, fixing the container image, or adjusting resource limits.',
-                exampleCommand: 'kubectl get pods',
+                hint: 'Try: kubectl logs <pod-name>',
+                exampleCommand: 'kubectl logs <pod-name>',
                 completed: false,
                 xpReward: 200,
                 checkCompletion: (_eventType: string, _data: any) => {
@@ -67,16 +67,15 @@ export class FundamentalsMissions {
             {
                 id: 4,
                 title: 'Create a Service',
-                description: 'Expose your Pods to other applications using a Kubernetes Service.',
-                explanation: 'Services provide a stable network endpoint for Pods. Since Pods are ephemeral (they can be created and destroyed), Services give you a consistent way to access your application. Services use labels and selectors to route traffic to the correct Pods. There are three main Service types: ClusterIP (internal), NodePort (external via node IP), and LoadBalancer (cloud provider load balancer).',
+                description: 'Services expose Pods to stable networking inside or outside the cluster.',
+                explanation: 'Pods have ephemeral IPs; Services provide stable access. Since Pods can be created and destroyed, their IP addresses change. Services provide a stable endpoint that routes traffic to the correct Pods using labels and selectors.',
+                whyThisMatters: 'Without Services, Pods cannot reliably communicate. Services are essential for microservices architectures where different components need to find and talk to each other. They abstract away Pod lifecycle and provide consistent networking.',
                 objectives: [
-                    'Understand what Services are and why they\'re needed',
-                    'Learn how Services use labels and selectors',
-                    'Create a ClusterIP Service to expose Pods internally',
-                    'Understand the difference between Service types'
+                    'Create a Service',
+                    'Understand ClusterIP behavior'
                 ],
-                hint: 'Services are created with kubectl create service. You can specify the type with --type flag. ClusterIP is the default type for internal communication.',
-                exampleCommand: 'kubectl create service clusterip myservice --tcp=80:8080',
+                hint: 'Try: kubectl expose deployment mydeploy --port=80 --target-port=80',
+                exampleCommand: 'kubectl expose deployment mydeploy --port=80 --target-port=80',
                 completed: false,
                 xpReward: 150,
                 checkCompletion: (eventType: string, _data: any) => {
@@ -86,16 +85,15 @@ export class FundamentalsMissions {
             {
                 id: 5,
                 title: 'Use a ConfigMap',
-                description: 'Store and manage configuration data separately from your application code.',
-                explanation: 'ConfigMaps allow you to decouple configuration from container images. This makes your applications more portable and easier to manage. ConfigMaps can store key-value pairs, configuration files, or entire configuration directories. Pods can consume ConfigMaps as environment variables, command-line arguments, or as files in a volume. This separation of concerns is a best practice in cloud-native applications.',
+                description: 'ConfigMaps store non-sensitive configuration data.',
+                explanation: 'They allow injecting environment variables or config files. ConfigMaps decouple configuration from container images, making applications more portable. You can create them from literal values, files, or directories, and mount them into Pods.',
+                whyThisMatters: 'Separates config from container images, a Kubernetes best practice. This allows you to use the same container image across different environments (dev, staging, prod) by just changing the ConfigMap. It\'s a fundamental pattern in cloud-native applications.',
                 objectives: [
-                    'Understand the purpose of ConfigMaps',
-                    'Learn how ConfigMaps separate config from code',
-                    'Create a ConfigMap with configuration data',
-                    'Understand how Pods consume ConfigMaps'
+                    'Create a ConfigMap',
+                    'Mount it or use env variables'
                 ],
-                hint: 'ConfigMaps are created with kubectl create configmap. You can create them from literal values, files, or directories.',
-                exampleCommand: 'kubectl create configmap myconfig --from-literal=key1=value1',
+                hint: 'kubectl create configmap app-config --from-literal=MODE=dev',
+                exampleCommand: 'kubectl create configmap app-config --from-literal=MODE=dev',
                 completed: false,
                 xpReward: 150,
                 checkCompletion: (eventType: string, _data: any) => {
@@ -105,16 +103,15 @@ export class FundamentalsMissions {
             {
                 id: 6,
                 title: 'Use a Secret',
-                description: 'Store sensitive information like passwords and API keys securely.',
-                explanation: 'Secrets are similar to ConfigMaps but designed for sensitive data like passwords, tokens, and keys. While Secrets are not encrypted by default (they\'re base64 encoded), Kubernetes provides mechanisms to encrypt them at rest. Secrets should never be committed to version control. They can be consumed by Pods in the same ways as ConfigMaps: as environment variables or volume mounts.',
+                description: 'Secrets store sensitive information like passwords.',
+                explanation: 'They are base64-encoded objects used securely within Pods. Secrets are similar to ConfigMaps but designed for sensitive data. While not encrypted by default, they should never be committed to version control and can be encrypted at rest in production clusters.',
+                whyThisMatters: 'Security is essential; Secrets prevent hardcoding credentials. In real-world applications, you need to store database passwords, API keys, and certificates securely. Using Secrets is the proper way to handle sensitive data in Kubernetes.',
                 objectives: [
-                    'Understand when to use Secrets vs ConfigMaps',
-                    'Learn how Secrets store sensitive data',
-                    'Create a Secret with sensitive information',
-                    'Understand security best practices for Secrets'
+                    'Create a Secret',
+                    'Use it in a Pod'
                 ],
-                hint: 'Secrets are created with kubectl create secret. Use generic type for key-value pairs. Remember: Secrets are base64 encoded, not encrypted by default.',
-                exampleCommand: 'kubectl create secret generic mysecret --from-literal=password=mypass',
+                hint: 'kubectl create secret generic db-pass --from-literal=password=123',
+                exampleCommand: 'kubectl create secret generic db-pass --from-literal=password=123',
                 completed: false,
                 xpReward: 150,
                 checkCompletion: (eventType: string, _data: any) => {
@@ -123,17 +120,16 @@ export class FundamentalsMissions {
             },
             {
                 id: 7,
-                title: 'Work with ReplicaSets',
-                description: 'Understand how ReplicaSets ensure a specified number of Pod replicas are running.',
-                explanation: 'ReplicaSets are the mechanism that ensures a desired number of Pod replicas are running at all times. Deployments use ReplicaSets to manage Pods. If a Pod fails or is deleted, the ReplicaSet automatically creates a new one to maintain the desired count. ReplicaSets use label selectors to identify which Pods they manage. Understanding this relationship helps you troubleshoot scaling and availability issues.',
+                title: 'Understand ReplicaSets',
+                description: 'ReplicaSets ensure the correct number of Pod replicas.',
+                explanation: 'Deployments create ReplicaSets as controllers. ReplicaSets use label selectors to identify which Pods they manage. If a Pod is deleted or fails, the ReplicaSet automatically creates a new one to maintain the desired count.',
+                whyThisMatters: 'Understanding the Pod → ReplicaSet → Deployment chain is foundational. This hierarchy is crucial for understanding how Kubernetes maintains desired state. When troubleshooting, you need to understand how these components interact.',
                 objectives: [
-                    'Understand the relationship between Deployments, ReplicaSets, and Pods',
-                    'Learn how ReplicaSets maintain desired replica counts',
-                    'Observe automatic Pod recreation when Pods fail',
-                    'Understand label selectors and how they work'
+                    'Inspect ReplicaSets',
+                    'Delete a Pod and watch it regenerate'
                 ],
-                hint: 'ReplicaSets are typically managed by Deployments. When you create a Deployment, Kubernetes automatically creates a ReplicaSet. You can observe this relationship by inspecting the resources.',
-                exampleCommand: 'kubectl get replicasets',
+                hint: 'kubectl get rs',
+                exampleCommand: 'kubectl get rs',
                 completed: false,
                 xpReward: 150,
                 checkCompletion: (eventType: string, _data: any) => {
@@ -143,18 +139,16 @@ export class FundamentalsMissions {
             },
             {
                 id: 8,
-                title: 'Create & Switch Namespaces',
-                description: 'Organize and isolate resources using Kubernetes namespaces.',
-                explanation: 'Namespaces provide a way to divide cluster resources between multiple users, teams, or projects. They act like virtual clusters within a physical cluster. Each namespace has its own set of resources (Pods, Services, ConfigMaps, etc.) and can have different access controls. Common namespaces include: default, kube-system (system components), and kube-public. Using namespaces helps organize resources and implement multi-tenancy.',
+                title: 'Create a Namespace',
+                description: 'Namespaces isolate resources within a cluster.',
+                explanation: 'Useful for teams, environments, or permissions. Namespaces act like virtual clusters within a physical cluster. Each namespace has its own set of resources and can have different access controls. Common namespaces include default, kube-system, and kube-public.',
+                whyThisMatters: 'Organizing workloads prevents naming conflicts and improves security. In multi-tenant environments, namespaces are essential for separating different teams or projects. They also help organize resources and implement RBAC policies.',
                 objectives: [
-                    'Understand what namespaces are and their purpose',
-                    'Learn how namespaces provide resource isolation',
-                    'Create a new namespace for your resources',
-                    'Switch between namespaces using kubectl',
-                    'Understand default namespaces in Kubernetes'
+                    'Create a namespace',
+                    'Deploy resources into it'
                 ],
-                hint: 'Namespaces are created with kubectl create namespace. You can switch your context to a namespace using kubectl config set-context or specify --namespace flag with commands.',
-                exampleCommand: 'kubectl create namespace myapp',
+                hint: 'kubectl create namespace dev',
+                exampleCommand: 'kubectl create namespace dev',
                 completed: false,
                 xpReward: 150,
                 checkCompletion: (_eventType: string, _data: any) => {
@@ -165,16 +159,13 @@ export class FundamentalsMissions {
             {
                 id: 9,
                 title: 'Apply Resource Requests & Limits',
-                description: 'Control CPU and memory allocation for your Pods to ensure fair resource distribution.',
-                explanation: 'Resource requests specify the minimum resources a Pod needs to run. Resource limits specify the maximum resources a Pod can use. The scheduler uses requests to place Pods on nodes with available resources. Limits prevent a Pod from consuming too many resources and affecting other Pods. This is crucial for multi-tenant clusters and helps prevent resource starvation. CPU is measured in cores (or millicores), memory in bytes (or Mi, Gi).',
+                description: 'Requests and limits control how Pods use CPU and memory.',
+                explanation: 'They help the scheduler place Pods correctly. Resource requests specify the minimum resources a Pod needs. The scheduler uses these to place Pods on nodes with available capacity. Limits prevent a Pod from consuming too many resources.',
+                whyThisMatters: 'Prevents resource starvation and improves cluster stability. Without resource management, one Pod could consume all CPU or memory on a node, affecting other Pods. This is critical for multi-tenant clusters and production environments.',
                 objectives: [
-                    'Understand the difference between requests and limits',
-                    'Learn how the scheduler uses resource requests',
-                    'Set CPU and memory requests for a Pod',
-                    'Set CPU and memory limits to prevent resource exhaustion',
-                    'Understand resource units (cores, millicores, Mi, Gi)'
+                    'Apply a Pod spec with requests/limits'
                 ],
-                hint: 'Resource requests and limits are specified in Pod specifications. You can set them using kubectl create with --requests and --limits flags, or in YAML manifests.',
+                hint: 'Use a YAML file with resources.limits and resources.requests',
                 exampleCommand: 'kubectl create pod mypod --image=nginx --requests=cpu=100m,memory=128Mi --limits=cpu=200m,memory=256Mi',
                 completed: false,
                 xpReward: 200,
@@ -186,16 +177,13 @@ export class FundamentalsMissions {
             {
                 id: 10,
                 title: 'Configure Liveness & Readiness Probes',
-                description: 'Set up health checks to ensure your application is running correctly.',
-                explanation: 'Probes are health checks that Kubernetes performs on your containers. Liveness probes determine if a container is running. If it fails, Kubernetes restarts the container. Readiness probes determine if a container is ready to accept traffic. If it fails, the Pod is removed from Service endpoints. Startup probes give containers time to start before liveness/readiness checks begin. Properly configured probes ensure your application recovers from failures and doesn\'t receive traffic before it\'s ready.',
+                description: 'Probes allow Kubernetes to detect unhealthy or unready containers.',
+                explanation: 'Liveness restarts containers; readiness controls traffic. Liveness probes determine if a container is running. If it fails, Kubernetes restarts the container. Readiness probes determine if a container is ready to accept traffic. If it fails, the Pod is removed from Service endpoints.',
+                whyThisMatters: 'Critical for production-grade reliability. Properly configured probes ensure your application recovers from failures automatically and doesn\'t receive traffic before it\'s ready. This is essential for zero-downtime deployments.',
                 objectives: [
-                    'Understand the difference between liveness and readiness probes',
-                    'Learn when each probe type is used',
-                    'Configure a liveness probe for a Pod',
-                    'Configure a readiness probe for a Pod',
-                    'Understand probe types: HTTP, TCP, and Exec'
+                    'Create a Pod with probes'
                 ],
-                hint: 'Probes are configured in Pod specifications. You can use HTTP (check endpoint), TCP (check port), or Exec (run command) probes. Liveness probes restart containers, readiness probes control traffic routing.',
+                hint: 'livenessProbe: httpGet: path: /',
                 exampleCommand: 'kubectl create pod mypod --image=nginx --liveness-probe=http-get=http://:80/health',
                 completed: false,
                 xpReward: 200,
@@ -207,16 +195,14 @@ export class FundamentalsMissions {
             {
                 id: 11,
                 title: 'Attach a Volume / PVC',
-                description: 'Add persistent storage to your Pods so data survives Pod restarts.',
-                explanation: 'Volumes provide storage for Pods. There are many volume types: emptyDir (temporary), hostPath (node filesystem), and PersistentVolume (PV) with PersistentVolumeClaim (PVC). PVCs are requests for storage that get bound to PVs. StorageClasses define different storage types and provisioning. Persistent storage is essential for stateful applications like databases. Data in volumes persists even when Pods are deleted and recreated.',
+                description: 'Volumes store persistent data for Pods.',
+                explanation: 'PVCs bind to PVs for dynamic storage. PersistentVolumeClaims (PVCs) are requests for storage that get bound to PersistentVolumes (PVs). StorageClasses define different storage types and enable dynamic provisioning. Data in volumes persists even when Pods are deleted.',
+                whyThisMatters: 'Stateful workloads rely on persistent storage. Databases, file storage, and stateful applications need data to survive Pod restarts. Understanding volumes is essential for deploying stateful applications in Kubernetes.',
                 objectives: [
-                    'Understand the difference between ephemeral and persistent storage',
-                    'Learn about PersistentVolumes and PersistentVolumeClaims',
-                    'Create a PersistentVolumeClaim',
-                    'Attach the PVC to a Pod as a volume mount',
-                    'Understand StorageClasses and dynamic provisioning'
+                    'Create PVC',
+                    'Attach it to a Pod'
                 ],
-                hint: 'First create a PersistentVolumeClaim, then reference it in your Pod specification under volumes. The PVC will be mounted at a specified path in the container.',
+                hint: 'kubectl apply -f pvc.yaml',
                 exampleCommand: 'kubectl create pvc mypvc --storage-class=standard --size=1Gi',
                 completed: false,
                 xpReward: 200,
@@ -228,16 +214,13 @@ export class FundamentalsMissions {
             {
                 id: 12,
                 title: 'Use Node Affinity Rules',
-                description: 'Control which nodes your Pods are scheduled on using affinity rules.',
-                explanation: 'Node affinity allows you to constrain which nodes your Pod can be scheduled on. This is useful for: ensuring Pods run on nodes with specific hardware (GPUs, SSDs), co-locating Pods for performance, or separating workloads for security. There are two types: required (hard requirement) and preferred (soft preference). Affinity rules use node labels to match nodes. This gives you fine-grained control over Pod placement.',
+                description: 'Affinity lets you choose which nodes Pods prefer or require.',
+                explanation: 'Useful for performance, compliance, or hardware constraints. Node affinity allows you to constrain which nodes your Pod can be scheduled on. There are two types: required (hard requirement) and preferred (soft preference). This gives fine-grained control over Pod placement.',
+                whyThisMatters: 'Gives fine control over Pod scheduling. You might need Pods on nodes with specific hardware (GPUs, SSDs), for compliance reasons, or to co-locate Pods for performance. Understanding affinity is important for advanced cluster management.',
                 objectives: [
-                    'Understand what node affinity is and when to use it',
-                    'Learn the difference between required and preferred affinity',
-                    'Create a Pod with node affinity rules',
-                    'Understand how node labels are used in affinity',
-                    'Learn about node selectors (simpler form of affinity)'
+                    'Create Pod with affinity rules'
                 ],
-                hint: 'Node affinity is specified in Pod specifications. You can use matchExpressions with operators like In, NotIn, Exists. Node selectors are a simpler way to match node labels.',
+                hint: 'nodeAffinity: requiredDuringScheduling...',
                 exampleCommand: 'kubectl create pod mypod --image=nginx --node-selector=disktype=ssd',
                 completed: false,
                 xpReward: 200,
@@ -248,18 +231,15 @@ export class FundamentalsMissions {
             },
             {
                 id: 13,
-                title: 'Expose an Application via NodePort',
-                description: 'Make your application accessible from outside the cluster using NodePort Service.',
-                explanation: 'NodePort Services expose your application on a port on each node in the cluster. External traffic can access your application by connecting to any node\'s IP address on the NodePort. Kubernetes automatically allocates a port in the 30000-32767 range, or you can specify one. NodePort is useful for development and testing, but for production, LoadBalancer or Ingress are typically preferred. NodePort works by opening a port on each node and forwarding traffic to the Service.',
+                title: 'Expose an Application (NodePort)',
+                description: 'NodePort lets external traffic reach your application.',
+                explanation: 'Simplest form of service exposure. NodePort Services expose your application on a port on each node in the cluster. External traffic can access your application by connecting to any node\'s IP address on the NodePort. Kubernetes allocates a port in the 30000-32767 range.',
+                whyThisMatters: 'Essential for accessing applications outside the cluster. While NodePort is simple, it\'s useful for development and testing. In production, LoadBalancer or Ingress are typically preferred, but understanding NodePort is foundational.',
                 objectives: [
-                    'Understand how NodePort Services work',
-                    'Learn the difference between ClusterIP, NodePort, and LoadBalancer',
-                    'Create a NodePort Service to expose your application',
-                    'Access your application from outside the cluster',
-                    'Understand port ranges and how NodePort allocates ports'
+                    'Create NodePort service'
                 ],
-                hint: 'Create a Service with type NodePort. You can specify the port with --node-port flag, or let Kubernetes assign one automatically. Then access your app via <node-ip>:<node-port>.',
-                exampleCommand: 'kubectl create service nodeport myapp --tcp=80:8080 --node-port=30080',
+                hint: 'kubectl expose deployment myapp --type=NodePort',
+                exampleCommand: 'kubectl expose deployment myapp --type=NodePort --port=80',
                 completed: false,
                 xpReward: 200,
                 checkCompletion: (eventType: string, data: any) => {
@@ -269,16 +249,14 @@ export class FundamentalsMissions {
             {
                 id: 14,
                 title: 'Inspect Cluster Events',
-                description: 'Monitor and understand cluster events to troubleshoot issues.',
-                explanation: 'Kubernetes Events provide a record of what has happened in your cluster. They show when resources are created, updated, deleted, or when errors occur. Events help you understand the lifecycle of resources and diagnose problems. Common events include: Pod scheduled, image pulled, container started, and various error conditions. Viewing events is often the first step in troubleshooting issues with your applications.',
+                description: 'Events provide insight into what the cluster is doing.',
+                explanation: 'They help diagnose scheduling issues and warnings. Kubernetes Events provide a record of what has happened in your cluster. They show when resources are created, updated, deleted, or when errors occur. Events help you understand the lifecycle of resources and diagnose problems.',
+                whyThisMatters: 'Understanding events is key to debugging. When something goes wrong, events are often the first place to look. They provide detailed information about what Kubernetes is doing and why operations succeed or fail.',
                 objectives: [
-                    'Understand what Kubernetes Events are',
-                    'Learn how to view events for resources',
-                    'Interpret event messages and their meanings',
-                    'Use events to troubleshoot Pod and Deployment issues',
-                    'Understand event types: Normal, Warning, Error'
+                    'Trigger events',
+                    'Inspect them'
                 ],
-                hint: 'Use kubectl get events to view all events, or kubectl describe pod <name> to see events for a specific resource. Events show timestamps and detailed messages about what happened.',
+                hint: 'kubectl get events',
                 exampleCommand: 'kubectl get events --sort-by=.metadata.creationTimestamp',
                 completed: false,
                 xpReward: 150,
@@ -289,19 +267,17 @@ export class FundamentalsMissions {
             },
             {
                 id: 15,
-                title: 'Final Challenge: Build a Complete Application Stack',
-                description: 'Combine everything you\'ve learned to create a production-like application stack.',
-                explanation: 'Real-world applications require multiple components working together: Deployments for running applications, Services for networking, ConfigMaps for configuration, and proper resource management. This final challenge tests your ability to orchestrate these components into a cohesive system. You\'ll create a multi-tier application with proper separation of concerns, demonstrating your understanding of Kubernetes fundamentals.',
+                title: 'Build a Small App Stack',
+                description: 'Deploy a full 3-tier application.',
+                explanation: 'Combines everything learned so far. Real-world applications require multiple components working together: Deployments for running applications, Services for networking, ConfigMaps for configuration, and proper resource management. This challenge tests your ability to orchestrate these components.',
+                whyThisMatters: 'Replicates real-world Kubernetes deployments. In production, you\'ll deploy complex applications with multiple components. This final challenge demonstrates your ability to combine all the concepts you\'ve learned into a cohesive, production-like system.',
                 objectives: [
-                    'Create a Deployment with multiple replicas',
-                    'Expose the Deployment with a Service',
-                    'Store configuration in a ConfigMap',
-                    'Scale the Deployment to handle load',
-                    'Apply resource limits to ensure fair resource usage',
-                    'Verify all components are working together'
+                    'Deploy backend',
+                    'Deploy frontend',
+                    'Expose service'
                 ],
-                hint: 'Start by creating a Deployment, then create a Service to expose it. Add a ConfigMap for configuration. Scale the Deployment to 3+ replicas. This demonstrates a complete application stack.',
-                exampleCommand: 'kubectl create deployment myapp --image=nginx && kubectl create service clusterip myapp --tcp=80:80 && kubectl scale deployment myapp --replicas=3',
+                hint: 'Use YAML files for multi-component deployments',
+                exampleCommand: 'kubectl create deployment backend --image=nginx && kubectl create deployment frontend --image=nginx && kubectl create service clusterip backend --tcp=80:80',
                 completed: false,
                 xpReward: 500,
                 checkCompletion: (_eventType: string, _data: any) => {

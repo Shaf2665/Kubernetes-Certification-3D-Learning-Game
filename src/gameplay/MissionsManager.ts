@@ -9,6 +9,7 @@ export interface Mission {
     title: string;
     description: string;
     explanation: string;       // What this concept is and why it matters
+    whyThisMatters: string;   // Why this concept is important in real-world scenarios
     objectives: string[];       // Bullet points of what user should learn
     hint: string;              // A small nudge if user is stuck
     exampleCommand?: string;   // Optional example kubectl command
@@ -26,10 +27,28 @@ export class MissionsManager {
     private currentMissionIndex: number = 0;
     private progressTracker: ProgressTracker;
     private hintTimer: number | null = null;
+    private tutorialPopup: any;
+    private whyThisMattersPanel: any;
+    private completionAnimation: any;
 
     constructor(_scene: Scene, clusterSimulator: ClusterSimulator) {
         this.clusterSimulator = clusterSimulator;
         this.progressTracker = new ProgressTracker();
+        this.initializeUIComponents();
+    }
+
+    private async initializeUIComponents(): Promise<void> {
+        try {
+            const { TutorialPopup } = await import('../ui/TutorialPopup.js');
+            const { WhyThisMattersPanel } = await import('../ui/WhyThisMattersPanel.js');
+            const { CompletionAnimation } = await import('../ui/CompletionAnimation.js');
+            
+            this.tutorialPopup = new TutorialPopup();
+            this.whyThisMattersPanel = new WhyThisMattersPanel();
+            this.completionAnimation = new CompletionAnimation();
+        } catch (error) {
+            console.error('[MissionsManager] Failed to initialize UI components:', error);
+        }
     }
 
     async init(): Promise<void> {
@@ -188,6 +207,19 @@ export class MissionsManager {
         this.progressTracker.addXP(mission.xpReward);
         this.progressTracker.completeMission(mission.id);
 
+        // Hide "Why This Matters" panel if visible
+        if (this.whyThisMattersPanel) {
+            this.whyThisMattersPanel.hide();
+        }
+
+        // Play completion animation
+        if (this.completionAnimation) {
+            this.completionAnimation.show(mission.title, mission.xpReward);
+        }
+
+        // Play success sound
+        this.playSuccessSound();
+
         // Update UI immediately
         this.updateMissionDisplay();
 
@@ -276,6 +308,13 @@ export class MissionsManager {
             // Start hint timer
             this.startHintTimer();
 
+            // Show tutorial popup for new mission
+            setTimeout(() => {
+                if (this.tutorialPopup) {
+                    this.tutorialPopup.show(currentMission.title, currentMission.explanation);
+                }
+            }, 500);
+
             console.log(`[MissionsManager] Current mission: ${currentMission.title}`);
         } else {
             missionTitleEl.textContent = 'No mission available';
@@ -304,6 +343,21 @@ export class MissionsManager {
             newBtn.addEventListener('click', () => {
                 this.showHint();
             });
+        }
+
+        // Set up "Why This Matters" button
+        const whyMattersBtn = document.getElementById('btn-why-matters');
+        if (whyMattersBtn) {
+            // Remove old listeners by cloning
+            const newBtn = whyMattersBtn.cloneNode(true) as HTMLElement;
+            whyMattersBtn.parentNode?.replaceChild(newBtn, whyMattersBtn);
+            
+            const currentMission = this.getCurrentMission();
+            if (currentMission && this.whyThisMattersPanel) {
+                newBtn.addEventListener('click', () => {
+                    this.whyThisMattersPanel.toggle(currentMission.whyThisMatters);
+                });
+            }
         }
 
         // Auto-show hint after 20 seconds
@@ -359,6 +413,21 @@ export class MissionsManager {
 
     getProgressTracker(): ProgressTracker {
         return this.progressTracker;
+    }
+
+    private playSuccessSound(): void {
+        try {
+            // Try to play sound if file exists
+            const audio = new Audio('./assets/sounds/mission_success.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(err => {
+                // Sound file might not exist, that's okay
+                console.log('[MissionsManager] Sound file not found or play failed:', err);
+            });
+        } catch (error) {
+            // Audio not supported or file missing
+            console.log('[MissionsManager] Could not play sound:', error);
+        }
     }
 }
 
