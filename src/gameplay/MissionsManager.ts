@@ -27,9 +27,35 @@ export class MissionsManager {
     }
 
     async init(): Promise<void> {
-        // Load fundamentals missions
-        this.missions = FundamentalsMissions.getMissions();
-        this.updateMissionDisplay();
+        console.log('[MissionsManager] Initializing MissionsManager...');
+        
+        try {
+            // Load fundamentals missions
+            console.log('[MissionsManager] Loading missions from FundamentalsMissions...');
+            this.missions = FundamentalsMissions.getMissions();
+            
+            if (!this.missions || this.missions.length === 0) {
+                console.warn('[MissionsManager] No missions loaded. Using empty array.');
+                this.missions = [];
+                return;
+            }
+            
+            console.log(`[MissionsManager] Loaded ${this.missions.length} missions`);
+            
+            // Validate missions
+            for (const mission of this.missions) {
+                if (!mission.title || !mission.description) {
+                    console.error('[MissionsManager] Invalid mission found:', mission);
+                }
+            }
+            
+            // Don't call updateMissionDisplay here - let FundamentalsScene call it after HUD is created
+            console.log('[MissionsManager] MissionsManager initialized successfully');
+        } catch (err) {
+            console.error('[MissionsManager] Init error:', err);
+            this.missions = [];
+            throw err;
+        }
     }
 
     getCurrentMission(): Mission | null {
@@ -88,20 +114,32 @@ export class MissionsManager {
         }
     }
 
-    private updateMissionDisplay(): void {
+    updateMissionDisplay(): void {
+        console.log('[MissionsManager] Updating mission display...');
+        
         const missionNameEl = document.getElementById('mission-name');
         const missionProgressEl = document.getElementById('mission-progress');
+
+        if (!missionNameEl || !missionProgressEl) {
+            console.warn('[MissionsManager] HUD elements not found, retrying in 100ms...');
+            // Retry after a short delay in case HUD is still being created
+            setTimeout(() => this.updateMissionDisplay(), 100);
+            return;
+        }
 
         const currentMission = this.getCurrentMission();
         const completedCount = this.missions.filter(m => m.completed).length;
 
-        if (missionNameEl && currentMission) {
+        if (currentMission) {
             missionNameEl.textContent = currentMission.title;
+            console.log(`[MissionsManager] Current mission: ${currentMission.title}`);
+        } else {
+            missionNameEl.textContent = 'No mission available';
+            console.warn('[MissionsManager] No current mission found');
         }
 
-        if (missionProgressEl) {
-            missionProgressEl.textContent = `${completedCount}/${this.missions.length}`;
-        }
+        missionProgressEl.textContent = `${completedCount}/${this.missions.length}`;
+        console.log(`[MissionsManager] Progress: ${completedCount}/${this.missions.length}`);
     }
 
     private showCompletionMessage(): void {

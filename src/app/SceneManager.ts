@@ -32,37 +32,49 @@ export class SceneManager {
     }
 
     async loadScene(sceneType: SceneType): Promise<void> {
-        // Dispose current scene
-        if (this.currentScene) {
-            this.currentScene.dispose();
-        }
+        console.log(`[SceneManager] Loading scene: ${sceneType}`);
+        
+        try {
+            // Dispose current scene
+            if (this.currentScene) {
+                console.log('[SceneManager] Disposing current scene');
+                this.currentScene.dispose();
+            }
 
-        // Check if scene already exists
-        if (this.scenes.has(sceneType)) {
-            this.currentScene = this.scenes.get(sceneType)!;
+            // Check if scene already exists
+            if (this.scenes.has(sceneType)) {
+                console.log(`[SceneManager] Scene ${sceneType} already exists, reusing`);
+                this.currentScene = this.scenes.get(sceneType)!;
+                this.currentSceneType = sceneType;
+                return;
+            }
+
+            // Create new scene
+            console.log(`[SceneManager] Creating new scene: ${sceneType}`);
+            let newScene: Scene;
+            
+            switch (sceneType) {
+                case 'main-menu':
+                    newScene = await MainMenuScene.create(this.engine);
+                    break;
+                case 'fundamentals':
+                    newScene = await FundamentalsScene.create(this.engine);
+                    break;
+                case 'lab':
+                    newScene = await LabEnvironmentScene.create(this.engine);
+                    break;
+                default:
+                    throw new Error(`Unknown scene type: ${sceneType}`);
+            }
+
+            this.scenes.set(sceneType, newScene);
+            this.currentScene = newScene;
             this.currentSceneType = sceneType;
-            return;
+            console.log(`[SceneManager] Scene ${sceneType} loaded successfully`);
+        } catch (err) {
+            console.error(`[SceneManager] Error loading scene ${sceneType}:`, err);
+            throw err;
         }
-
-        // Create new scene
-        let newScene: Scene;
-        switch (sceneType) {
-            case 'main-menu':
-                newScene = await MainMenuScene.create(this.engine);
-                break;
-            case 'fundamentals':
-                newScene = await FundamentalsScene.create(this.engine);
-                break;
-            case 'lab':
-                newScene = await LabEnvironmentScene.create(this.engine);
-                break;
-            default:
-                throw new Error(`Unknown scene type: ${sceneType}`);
-        }
-
-        this.scenes.set(sceneType, newScene);
-        this.currentScene = newScene;
-        this.currentSceneType = sceneType;
     }
 
     getCurrentScene(): Scene | null {

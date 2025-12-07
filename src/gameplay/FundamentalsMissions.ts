@@ -5,7 +5,8 @@ import { Mission } from './MissionsManager.js';
  */
 export class FundamentalsMissions {
     static getMissions(): Mission[] {
-        return [
+        console.log('[FundamentalsMissions] Getting missions...');
+        const missions = [
             {
                 id: 1,
                 title: 'Create your first Pod',
@@ -132,6 +133,9 @@ export class FundamentalsMissions {
                 xpReward: 500
             }
         ];
+        
+        console.log(`[FundamentalsMissions] Returning ${missions.length} missions`);
+        return missions;
     }
 }
 

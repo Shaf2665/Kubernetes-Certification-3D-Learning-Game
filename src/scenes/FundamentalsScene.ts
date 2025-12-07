@@ -10,44 +10,75 @@ export class FundamentalsScene {
     private static missionsManager: MissionsManager | null = null;
 
     static async create(engine: Engine): Promise<Scene> {
+        console.log('[FundamentalsScene] Initializing FundamentalsScene...');
+        
         const scene = new Scene(engine);
         
-        // Create camera
-        const camera = new ArcRotateCamera(
-            'camera',
-            -Math.PI / 2,
-            Math.PI / 3,
-            20,
-            Vector3.Zero(),
-            scene
-        );
-        camera.attachControl(engine.getRenderingCanvas()!, true);
-        camera.lowerRadiusLimit = 5;
-        camera.upperRadiusLimit = 50;
+        try {
+            // Create camera
+            const camera = new ArcRotateCamera(
+                'camera',
+                -Math.PI / 2,
+                Math.PI / 3,
+                20,
+                Vector3.Zero(),
+                scene
+            );
+            camera.attachControl(engine.getRenderingCanvas()!, true);
+            camera.lowerRadiusLimit = 5;
+            camera.upperRadiusLimit = 50;
 
-        // Create lights
-        const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 1, 0), scene);
-        hemiLight.intensity = 0.6;
-        
-        const dirLight = new DirectionalLight('dirLight', new Vector3(-1, -1, -1), scene);
-        dirLight.intensity = 0.8;
+            // Create lights
+            const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 1, 0), scene);
+            hemiLight.intensity = 0.6;
+            
+            const dirLight = new DirectionalLight('dirLight', new Vector3(-1, -1, -1), scene);
+            dirLight.intensity = 0.8;
 
-        // Create ground
-        const ground = MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, scene);
-        const groundMaterial = new StandardMaterial('groundMat', scene);
-        groundMaterial.diffuseColor = new Color3(0.2, 0.2, 0.25);
-        ground.material = groundMaterial;
+            // Create ground
+            const ground = MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, scene);
+            const groundMaterial = new StandardMaterial('groundMat', scene);
+            groundMaterial.diffuseColor = new Color3(0.2, 0.2, 0.25);
+            ground.material = groundMaterial;
 
-        // Initialize cluster simulator
-        this.clusterSimulator = new ClusterSimulator(scene);
-        await this.clusterSimulator.init();
+            // Create HUD FIRST (before missions manager so DOM elements exist)
+            console.log('[FundamentalsScene] Creating HUD...');
+            this.createHUD(scene);
 
-        // Initialize missions manager
-        this.missionsManager = new MissionsManager(scene, this.clusterSimulator);
-        await this.missionsManager.init();
+            // Initialize cluster simulator
+            console.log('[FundamentalsScene] Initializing ClusterSimulator...');
+            this.clusterSimulator = new ClusterSimulator(scene);
+            try {
+                await this.clusterSimulator.init();
+                console.log('[FundamentalsScene] ClusterSimulator initialized successfully');
+            } catch (err) {
+                console.error('[FundamentalsScene] ClusterSimulator init error:', err);
+                // Continue even if simulator fails
+            }
 
-        // Create HUD
-        this.createHUD(scene);
+            // Initialize missions manager AFTER HUD is created
+            console.log('[FundamentalsScene] Initializing MissionsManager...');
+            this.missionsManager = new MissionsManager(scene, this.clusterSimulator);
+            try {
+                await this.missionsManager.init();
+                console.log('[FundamentalsScene] MissionsManager initialized successfully');
+                
+                // Update display after missions are loaded
+                this.missionsManager.updateMissionDisplay();
+            } catch (err) {
+                console.error('[FundamentalsScene] MissionsManager init error:', err);
+                // Show error in UI
+                const missionNameEl = document.getElementById('mission-name');
+                if (missionNameEl) {
+                    missionNameEl.textContent = 'Error loading missions';
+                }
+            }
+
+            console.log('[FundamentalsScene] FundamentalsScene loaded successfully');
+        } catch (err) {
+            console.error('[FundamentalsScene] Scene creation error:', err);
+            // Still return scene even if initialization fails
+        }
 
         return scene;
     }

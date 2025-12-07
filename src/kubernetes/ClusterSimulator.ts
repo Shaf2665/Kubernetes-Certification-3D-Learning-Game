@@ -37,11 +37,22 @@ export class ClusterSimulator {
     }
 
     async init(): Promise<void> {
-        // Create initial cluster nodes
-        this.createInitialNodes();
+        console.log('[ClusterSimulator] Initializing ClusterSimulator...');
         
-        // Start simulation loop
-        this.startSimulation();
+        try {
+            // Create initial cluster nodes
+            this.createInitialNodes();
+            console.log(`[ClusterSimulator] Created ${this.nodes.size} nodes`);
+            
+            // Start simulation loop
+            this.startSimulation();
+            console.log('[ClusterSimulator] Simulation loop started');
+            
+            console.log('[ClusterSimulator] ClusterSimulator initialized successfully');
+        } catch (err) {
+            console.error('[ClusterSimulator] Init error:', err);
+            throw err;
+        }
     }
 
     private createInitialNodes(): void {
