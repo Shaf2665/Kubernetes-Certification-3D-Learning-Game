@@ -168,6 +168,12 @@ export class MissionsManager {
 
         console.log(`[MissionsManager] Handling event ${eventType} for mission ${mission.id}: ${mission.title}`);
 
+        // Check prerequisites before processing event
+        if (!this.checkPrerequisites(mission)) {
+            console.log(`[MissionsManager] Prerequisites not met for mission ${mission.id}`);
+            return;
+        }
+
         // Check if mission has a checkCompletion function
         if (mission.checkCompletion) {
             const completed = mission.checkCompletion(eventType, data);
@@ -182,6 +188,162 @@ export class MissionsManager {
                 console.log(`[MissionsManager] Mission ${mission.id} completed (fallback check)!`);
                 this.completeCurrentMission();
             }
+        }
+    }
+
+    private checkPrerequisites(mission: Mission): boolean {
+        if (!mission.prerequisites) {
+            return true; // No prerequisites means always valid
+        }
+
+        const prereqs = mission.prerequisites;
+        let allMet = true;
+        const missing: string[] = [];
+
+        // Check Pod requirement
+        if (prereqs.requiresPod) {
+            const hasPod = this.clusterSimulator.getPods().size > 0;
+            if (!hasPod) {
+                allMet = false;
+                missing.push('Pod');
+            }
+        }
+
+        // Check Deployment requirement
+        if (prereqs.requiresDeployment) {
+            const hasDeployment = this.clusterSimulator.getDeployments().size > 0;
+            if (!hasDeployment) {
+                allMet = false;
+                missing.push('Deployment');
+            }
+        }
+
+        // Check ReplicaSet requirement
+        if (prereqs.requiresReplicaSet) {
+            const hasReplicaSet = this.clusterSimulator.getReplicaSets().size > 0;
+            if (!hasReplicaSet) {
+                allMet = false;
+                missing.push('ReplicaSet');
+            }
+        }
+
+        // Check Service requirement
+        if (prereqs.requiresService) {
+            const hasService = this.clusterSimulator.getServices().size > 0;
+            if (!hasService) {
+                allMet = false;
+                missing.push('Service');
+            }
+        }
+
+        // Check ConfigMap requirement
+        if (prereqs.requiresConfigMap) {
+            const hasConfigMap = this.clusterSimulator.getConfigMaps().size > 0;
+            if (!hasConfigMap) {
+                allMet = false;
+                missing.push('ConfigMap');
+            }
+        }
+
+        // Check Secret requirement
+        if (prereqs.requiresSecret) {
+            const hasSecret = this.clusterSimulator.getSecrets().size > 0;
+            if (!hasSecret) {
+                allMet = false;
+                missing.push('Secret');
+            }
+        }
+
+        if (!allMet) {
+            this.showPrerequisiteError(mission, missing);
+            return false;
+        }
+
+        return true;
+    }
+
+    private updatePrerequisitesDisplay(mission: Mission): void {
+        const prereqsSection = document.getElementById('mission-prerequisites-section');
+        const prereqsList = document.getElementById('mission-prerequisites-list');
+        
+        if (!prereqsSection || !prereqsList) {
+            return;
+        }
+
+        if (!mission.prerequisites) {
+            prereqsSection.style.display = 'none';
+            return;
+        }
+
+        prereqsSection.style.display = 'block';
+        prereqsList.innerHTML = '';
+
+        const prereqs = mission.prerequisites;
+        const checks: { name: string; met: boolean }[] = [];
+
+        if (prereqs.requiresPod) {
+            const hasPod = this.clusterSimulator.getPods().size > 0;
+            checks.push({ name: 'Pod', met: hasPod });
+        }
+
+        if (prereqs.requiresDeployment) {
+            const hasDeployment = this.clusterSimulator.getDeployments().size > 0;
+            checks.push({ name: 'Deployment', met: hasDeployment });
+        }
+
+        if (prereqs.requiresReplicaSet) {
+            const hasReplicaSet = this.clusterSimulator.getReplicaSets().size > 0;
+            checks.push({ name: 'ReplicaSet', met: hasReplicaSet });
+        }
+
+        if (prereqs.requiresService) {
+            const hasService = this.clusterSimulator.getServices().size > 0;
+            checks.push({ name: 'Service', met: hasService });
+        }
+
+        if (prereqs.requiresConfigMap) {
+            const hasConfigMap = this.clusterSimulator.getConfigMaps().size > 0;
+            checks.push({ name: 'ConfigMap', met: hasConfigMap });
+        }
+
+        if (prereqs.requiresSecret) {
+            const hasSecret = this.clusterSimulator.getSecrets().size > 0;
+            checks.push({ name: 'Secret', met: hasSecret });
+        }
+
+        checks.forEach(check => {
+            const li = document.createElement('li');
+            li.style.marginBottom = '4px';
+            li.innerHTML = `
+                <span style="color: ${check.met ? '#4caf50' : '#ff4444'};">
+                    ${check.met ? '✔' : '❌'}
+                </span>
+                Requires ${check.name}: ${check.met ? 'Created' : 'Not yet created'}
+            `;
+            prereqsList.appendChild(li);
+        });
+    }
+
+    private async showPrerequisiteError(mission: Mission, missing: string[]): Promise<void> {
+        const missingList = missing.join(', ');
+        let message = '';
+
+        if (mission.id === 3) {
+            message = "Hold on! You must create a Deployment before you can scale it. Complete Mission 2 first to create a Deployment.";
+        } else if (mission.id === 4) {
+            message = "Create a Deployment first so Kubernetes knows which Pods to expose. Complete Mission 2 to create a Deployment.";
+        } else if (mission.id === 5) {
+            message = "You need to create a Deployment first. ReplicaSets are automatically created by Deployments. Complete Mission 2 first.";
+        } else {
+            message = `This mission requires: ${missingList}. Please complete the previous missions first.`;
+        }
+
+        // Show error message using tutorial popup
+        if (this.tutorialPopup) {
+            this.tutorialPopup.showMessage('Prerequisites Not Met', message);
+        } else {
+            // Fallback to alert if popup not available
+            alert(message);
         }
     }
 
