@@ -13,7 +13,10 @@ export class FundamentalsMissions {
                 description: 'Learn how to create a basic Kubernetes Pod using kubectl.',
                 objectives: ['Create a pod named "my-first-pod"'],
                 completed: false,
-                xpReward: 100
+                xpReward: 100,
+                checkCompletion: (eventType: string, _data: any) => {
+                    return eventType === 'podCreated';
+                }
             },
             {
                 id: 2,
@@ -21,7 +24,10 @@ export class FundamentalsMissions {
                 description: 'Create a deployment and scale it to multiple replicas.',
                 objectives: ['Create a deployment', 'Scale it to 3 replicas'],
                 completed: false,
-                xpReward: 150
+                xpReward: 150,
+                checkCompletion: (eventType: string, data: any) => {
+                    return eventType === 'deploymentScaled' && data && data.replicas >= 3;
+                }
             },
             {
                 id: 3,
@@ -37,7 +43,10 @@ export class FundamentalsMissions {
                 description: 'Expose your pods using a Kubernetes Service.',
                 objectives: ['Create a ClusterIP service'],
                 completed: false,
-                xpReward: 150
+                xpReward: 150,
+                checkCompletion: (eventType: string, _data: any) => {
+                    return eventType === 'serviceCreated';
+                }
             },
             {
                 id: 5,
@@ -45,7 +54,10 @@ export class FundamentalsMissions {
                 description: 'Store configuration data in a ConfigMap.',
                 objectives: ['Create a ConfigMap'],
                 completed: false,
-                xpReward: 150
+                xpReward: 150,
+                checkCompletion: (eventType: string, _data: any) => {
+                    return eventType === 'configMapCreated';
+                }
             },
             {
                 id: 6,
@@ -53,7 +65,10 @@ export class FundamentalsMissions {
                 description: 'Store sensitive data in a Kubernetes Secret.',
                 objectives: ['Create a Secret'],
                 completed: false,
-                xpReward: 150
+                xpReward: 150,
+                checkCompletion: (eventType: string, _data: any) => {
+                    return eventType === 'secretCreated';
+                }
             },
             {
                 id: 7,

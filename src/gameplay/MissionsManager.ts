@@ -2,6 +2,7 @@ import { Scene } from '@babylonjs/core';
 import { ClusterSimulator } from '../kubernetes/ClusterSimulator.js';
 import { FundamentalsMissions } from './FundamentalsMissions.js';
 import { ProgressTracker } from './ProgressTracker.js';
+import { kubeEvents } from '../kubernetes/KubeEventEmitter.js';
 
 export interface Mission {
     id: number;
@@ -10,6 +11,7 @@ export interface Mission {
     objectives: string[];
     completed: boolean;
     xpReward: number;
+    checkCompletion?: (eventType: string, data: any) => boolean;
 }
 
 /**
@@ -49,12 +51,80 @@ export class MissionsManager {
                 }
             }
             
+            // Subscribe to cluster events
+            this.setupEventListeners();
+            
             // Don't call updateMissionDisplay here - let FundamentalsScene call it after HUD is created
             console.log('[MissionsManager] MissionsManager initialized successfully');
         } catch (err) {
             console.error('[MissionsManager] Init error:', err);
             this.missions = [];
             throw err;
+        }
+    }
+
+    private setupEventListeners(): void {
+        console.log('[MissionsManager] Setting up event listeners...');
+        
+        // Listen for pod creation
+        kubeEvents.on('podCreated', (data) => {
+            console.log('[MissionsManager] Received podCreated event:', data);
+            this.handleEvent('podCreated', data);
+        });
+
+        // Listen for deployment creation
+        kubeEvents.on('deploymentCreated', (data) => {
+            console.log('[MissionsManager] Received deploymentCreated event:', data);
+            this.handleEvent('deploymentCreated', data);
+        });
+
+        // Listen for deployment scaling
+        kubeEvents.on('deploymentScaled', (data) => {
+            console.log('[MissionsManager] Received deploymentScaled event:', data);
+            this.handleEvent('deploymentScaled', data);
+        });
+
+        // Listen for service creation
+        kubeEvents.on('serviceCreated', (data) => {
+            console.log('[MissionsManager] Received serviceCreated event:', data);
+            this.handleEvent('serviceCreated', data);
+        });
+
+        // Listen for configmap creation
+        kubeEvents.on('configMapCreated', (data) => {
+            console.log('[MissionsManager] Received configMapCreated event:', data);
+            this.handleEvent('configMapCreated', data);
+        });
+
+        // Listen for secret creation
+        kubeEvents.on('secretCreated', (data) => {
+            console.log('[MissionsManager] Received secretCreated event:', data);
+            this.handleEvent('secretCreated', data);
+        });
+    }
+
+    public handleEvent(eventType: string, data: any): void {
+        const mission = this.getCurrentMission();
+        if (!mission || mission.completed) {
+            return;
+        }
+
+        console.log(`[MissionsManager] Handling event ${eventType} for mission ${mission.id}: ${mission.title}`);
+
+        // Check if mission has a checkCompletion function
+        if (mission.checkCompletion) {
+            const completed = mission.checkCompletion(eventType, data);
+            if (completed) {
+                console.log(`[MissionsManager] Mission ${mission.id} completed!`);
+                this.completeCurrentMission();
+            }
+        } else {
+            // Fallback to old checkMissionCompletion method
+            const completed = this.checkMissionCompletion(mission);
+            if (completed) {
+                console.log(`[MissionsManager] Mission ${mission.id} completed (fallback check)!`);
+                this.completeCurrentMission();
+            }
         }
     }
 
@@ -98,18 +168,27 @@ export class MissionsManager {
 
     completeCurrentMission(): void {
         const mission = this.getCurrentMission();
-        if (!mission || mission.completed) return;
+        if (!mission || mission.completed) {
+            console.warn('[MissionsManager] Cannot complete mission - already completed or not found');
+            return;
+        }
 
+        console.log(`[MissionsManager] Completing mission ${mission.id}: ${mission.title}`);
         mission.completed = true;
         this.progressTracker.addXP(mission.xpReward);
         this.progressTracker.completeMission(mission.id);
 
+        // Update UI immediately
+        this.updateMissionDisplay();
+
         // Move to next mission
         if (this.currentMissionIndex < this.missions.length - 1) {
             this.currentMissionIndex++;
+            console.log(`[MissionsManager] Moving to next mission: ${this.getCurrentMission()?.title}`);
             this.updateMissionDisplay();
         } else {
             // All missions completed
+            console.log('[MissionsManager] All missions completed!');
             this.showCompletionMessage();
         }
     }

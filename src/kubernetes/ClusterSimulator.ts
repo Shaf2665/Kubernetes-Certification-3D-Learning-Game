@@ -8,6 +8,7 @@ import { SecretEntity } from './SecretEntity.js';
 import { ReplicaSetEntity } from './ReplicaSetEntity.js';
 import { VolumeEntity } from './VolumeEntity.js';
 import { EventSystem } from './EventSystem.js';
+import { kubeEvents } from './KubeEventEmitter.js';
 
 export interface ClusterResource {
     name: string;
@@ -142,6 +143,13 @@ export class ClusterSimulator {
         this.pods.set(name, pod);
         node.addPod(pod);
 
+        // Emit pod created event
+        kubeEvents.emit('podCreated', {
+            name: name,
+            namespace: 'default',
+            pod: pod
+        });
+
         // Transition to Running after a delay
         setTimeout(() => {
             pod.setPhase('Running');
@@ -192,6 +200,14 @@ export class ClusterSimulator {
         deployment.setReplicas(replicas);
         this.deployments.set(name, deployment);
 
+        // Emit deployment created event
+        kubeEvents.emit('deploymentCreated', {
+            name: name,
+            namespace: 'default',
+            replicas: replicas,
+            deployment: deployment
+        });
+
         // Create pods for deployment
         for (let i = 0; i < replicas; i++) {
             this.createPodForDeployment(deployment);
@@ -212,6 +228,15 @@ export class ClusterSimulator {
         if (!deployment) return false;
 
         deployment.setReplicas(replicas);
+        
+        // Emit deployment scaled event
+        kubeEvents.emit('deploymentScaled', {
+            name: name,
+            namespace: 'default',
+            replicas: replicas,
+            deployment: deployment
+        });
+        
         return true;
     }
 
@@ -229,6 +254,14 @@ export class ClusterSimulator {
         const service = new ServiceEntity(name, this.scene, pos);
         service.setType(type);
         this.services.set(name, service);
+
+        // Emit service created event
+        kubeEvents.emit('serviceCreated', {
+            name: name,
+            namespace: 'default',
+            type: type,
+            service: service
+        });
 
         return service;
     }
@@ -248,6 +281,14 @@ export class ClusterSimulator {
         configMap.setData(data);
         this.configMaps.set(name, configMap);
 
+        // Emit configmap created event
+        kubeEvents.emit('configMapCreated', {
+            name: name,
+            namespace: 'default',
+            data: data,
+            configMap: configMap
+        });
+
         return configMap;
     }
 
@@ -264,6 +305,13 @@ export class ClusterSimulator {
 
         const secret = new SecretEntity(name, this.scene, pos);
         this.secrets.set(name, secret);
+
+        // Emit secret created event
+        kubeEvents.emit('secretCreated', {
+            name: name,
+            namespace: 'default',
+            secret: secret
+        });
 
         return secret;
     }
