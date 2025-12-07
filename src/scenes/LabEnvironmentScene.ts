@@ -10,6 +10,10 @@ export class LabEnvironmentScene {
     private static terminalUI: TerminalUI | null = null;
 
     static async create(engine: Engine): Promise<Scene> {
+        // Reset static variables to prevent stale references
+        this.clusterSimulator = null;
+        this.terminalUI = null;
+        
         const scene = new Scene(engine);
         
         // Create camera

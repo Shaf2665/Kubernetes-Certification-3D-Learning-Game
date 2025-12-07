@@ -1,6 +1,7 @@
 import { Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, DirectionalLight, MeshBuilder, StandardMaterial, Color3 } from '@babylonjs/core';
 import { ClusterSimulator } from '../kubernetes/ClusterSimulator.js';
 import { MissionsManager } from '../gameplay/MissionsManager.js';
+import { TerminalUI } from '../ui/TerminalUI.js';
 
 /**
  * Main fundamentals learning scene
@@ -8,9 +9,15 @@ import { MissionsManager } from '../gameplay/MissionsManager.js';
 export class FundamentalsScene {
     private static clusterSimulator: ClusterSimulator | null = null;
     private static missionsManager: MissionsManager | null = null;
+    private static terminalUI: TerminalUI | null = null;
 
     static async create(engine: Engine): Promise<Scene> {
         console.log('[FundamentalsScene] Initializing FundamentalsScene...');
+        
+        // Reset static variables to prevent stale references
+        this.clusterSimulator = null;
+        this.missionsManager = null;
+        this.terminalUI = null;
         
         const scene = new Scene(engine);
         
@@ -54,6 +61,19 @@ export class FundamentalsScene {
             } catch (err) {
                 console.error('[FundamentalsScene] ClusterSimulator init error:', err);
                 // Continue even if simulator fails
+            }
+
+            // Initialize terminal UI for Fundamentals scene
+            console.log('[FundamentalsScene] Initializing TerminalUI...');
+            if (this.clusterSimulator) {
+                try {
+                    this.terminalUI = new TerminalUI(this.clusterSimulator);
+                    await this.terminalUI.init();
+                    console.log('[FundamentalsScene] TerminalUI initialized successfully');
+                } catch (err) {
+                    console.error('[FundamentalsScene] TerminalUI init error:', err);
+                    // Continue even if terminal fails
+                }
             }
 
             // Initialize missions manager AFTER HUD is created
@@ -145,6 +165,10 @@ export class FundamentalsScene {
 
     public static getMissionsManager(): MissionsManager | null {
         return this.missionsManager;
+    }
+
+    public static getTerminalUI(): TerminalUI | null {
+        return this.terminalUI;
     }
 }
 

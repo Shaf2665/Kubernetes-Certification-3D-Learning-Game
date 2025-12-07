@@ -44,10 +44,24 @@ export class InputManager {
             event.preventDefault();
             const terminal = document.getElementById('terminal');
             if (terminal) {
+                // Check if terminal has content (is initialized)
+                const hasContent = terminal.querySelector('#terminal-input') !== null;
+                
+                if (!hasContent) {
+                    console.warn('[InputManager] Terminal not initialized for current scene');
+                    // Try to initialize terminal if we're in a scene that should have it
+                    const currentSceneType = this.sceneManager.getCurrentSceneType();
+                    if (currentSceneType === 'fundamentals' || currentSceneType === 'lab') {
+                        // Terminal should be initialized by scene, but if not, show message
+                        console.warn('[InputManager] Terminal UI not available. Scene may still be loading.');
+                        return;
+                    }
+                }
+                
                 const isVisible = terminal.style.display !== 'none' && terminal.style.display !== '';
                 terminal.style.display = isVisible ? 'none' : 'block';
                 // Focus input when showing terminal
-                if (!isVisible) {
+                if (!isVisible && hasContent) {
                     const input = terminal.querySelector('#terminal-input') as HTMLInputElement;
                     if (input) {
                         setTimeout(() => input.focus(), 100);

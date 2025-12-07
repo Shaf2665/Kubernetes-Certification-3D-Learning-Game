@@ -41,12 +41,15 @@ export class SceneManager {
                 this.currentScene.dispose();
             }
 
-            // Check if scene already exists
+            // Always dispose and recreate scenes to prevent stale state
+            // Remove old scene from map if it exists
             if (this.scenes.has(sceneType)) {
-                console.log(`[SceneManager] Scene ${sceneType} already exists, reusing`);
-                this.currentScene = this.scenes.get(sceneType)!;
-                this.currentSceneType = sceneType;
-                return;
+                const oldScene = this.scenes.get(sceneType);
+                if (oldScene) {
+                    console.log(`[SceneManager] Disposing old ${sceneType} scene`);
+                    oldScene.dispose();
+                }
+                this.scenes.delete(sceneType);
             }
 
             // Create new scene
