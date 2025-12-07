@@ -8,7 +8,10 @@ export interface Mission {
     id: number;
     title: string;
     description: string;
-    objectives: string[];
+    explanation: string;       // What this concept is and why it matters
+    objectives: string[];       // Bullet points of what user should learn
+    hint: string;              // A small nudge if user is stuck
+    exampleCommand?: string;   // Optional example kubectl command
     completed: boolean;
     xpReward: number;
     checkCompletion?: (eventType: string, data: any) => boolean;
@@ -22,6 +25,7 @@ export class MissionsManager {
     private missions: Mission[] = [];
     private currentMissionIndex: number = 0;
     private progressTracker: ProgressTracker;
+    private hintTimer: number | null = null;
 
     constructor(_scene: Scene, clusterSimulator: ClusterSimulator) {
         this.clusterSimulator = clusterSimulator;
@@ -173,6 +177,12 @@ export class MissionsManager {
             return;
         }
 
+        // Clear hint timer
+        if (this.hintTimer) {
+            clearTimeout(this.hintTimer);
+            this.hintTimer = null;
+        }
+
         console.log(`[MissionsManager] Completing mission ${mission.id}: ${mission.title}`);
         mission.completed = true;
         this.progressTracker.addXP(mission.xpReward);
@@ -196,12 +206,21 @@ export class MissionsManager {
     updateMissionDisplay(): void {
         console.log('[MissionsManager] Updating mission display...');
         
-        const missionNameEl = document.getElementById('mission-name');
+        const missionTitleEl = document.getElementById('mission-title');
+        const missionDescriptionEl = document.getElementById('mission-description');
         const missionProgressEl = document.getElementById('mission-progress');
+        const missionExplanationEl = document.getElementById('mission-explanation');
+        const missionObjectivesEl = document.getElementById('mission-objectives');
+        const missionHintEl = document.getElementById('mission-hint');
+        const missionExampleEl = document.getElementById('mission-example');
+        const missionExampleCommandEl = document.getElementById('mission-example-command');
+        const showHintBtn = document.getElementById('btn-show-hint');
+        const explanationSection = document.getElementById('mission-explanation-section');
+        const objectivesSection = document.getElementById('mission-objectives-section');
+        const hintSection = document.getElementById('mission-hint-section');
 
-        if (!missionNameEl || !missionProgressEl) {
+        if (!missionTitleEl || !missionDescriptionEl || !missionProgressEl) {
             console.warn('[MissionsManager] HUD elements not found, retrying in 100ms...');
-            // Retry after a short delay in case HUD is still being created
             setTimeout(() => this.updateMissionDisplay(), 100);
             return;
         }
@@ -210,15 +229,106 @@ export class MissionsManager {
         const completedCount = this.missions.filter(m => m.completed).length;
 
         if (currentMission) {
-            missionNameEl.textContent = currentMission.title;
+            // Update basic info
+            missionTitleEl.textContent = currentMission.title;
+            missionDescriptionEl.textContent = currentMission.description;
+            missionProgressEl.textContent = `${completedCount}/${this.missions.length}`;
+
+            // Update explanation
+            if (missionExplanationEl && explanationSection) {
+                missionExplanationEl.textContent = currentMission.explanation;
+                explanationSection.style.display = 'block';
+            }
+
+            // Update objectives
+            if (missionObjectivesEl && objectivesSection) {
+                missionObjectivesEl.innerHTML = '';
+                currentMission.objectives.forEach(objective => {
+                    const li = document.createElement('li');
+                    li.textContent = objective;
+                    li.style.marginBottom = '4px';
+                    missionObjectivesEl.appendChild(li);
+                });
+                objectivesSection.style.display = 'block';
+            }
+
+            // Reset hint display (hidden by default)
+            if (hintSection) {
+                hintSection.style.display = 'none';
+            }
+            if (showHintBtn) {
+                showHintBtn.style.display = 'block';
+            }
+
+            // Set up hint content (but keep it hidden)
+            if (missionHintEl) {
+                missionHintEl.textContent = currentMission.hint;
+            }
+            if (missionExampleCommandEl && currentMission.exampleCommand) {
+                missionExampleCommandEl.textContent = currentMission.exampleCommand;
+                if (missionExampleEl) {
+                    missionExampleEl.style.display = 'block';
+                }
+            } else if (missionExampleEl) {
+                missionExampleEl.style.display = 'none';
+            }
+
+            // Start hint timer
+            this.startHintTimer();
+
             console.log(`[MissionsManager] Current mission: ${currentMission.title}`);
         } else {
-            missionNameEl.textContent = 'No mission available';
+            missionTitleEl.textContent = 'No mission available';
+            missionDescriptionEl.textContent = 'All missions completed!';
             console.warn('[MissionsManager] No current mission found');
         }
 
-        missionProgressEl.textContent = `${completedCount}/${this.missions.length}`;
         console.log(`[MissionsManager] Progress: ${completedCount}/${this.missions.length}`);
+    }
+
+    private startHintTimer(): void {
+        // Clear existing timer
+        if (this.hintTimer) {
+            clearTimeout(this.hintTimer);
+        }
+
+        // Mission timer started
+
+        // Set up hint button click handler
+        const showHintBtn = document.getElementById('btn-show-hint');
+        if (showHintBtn) {
+            // Remove old listeners by cloning
+            const newBtn = showHintBtn.cloneNode(true) as HTMLElement;
+            showHintBtn.parentNode?.replaceChild(newBtn, showHintBtn);
+            
+            newBtn.addEventListener('click', () => {
+                this.showHint();
+            });
+        }
+
+        // Auto-show hint after 20 seconds
+        this.hintTimer = window.setTimeout(() => {
+            console.log('[MissionsManager] Auto-showing hint after 20 seconds');
+            this.showHint();
+        }, 20000);
+    }
+
+    private showHint(): void {
+        const hintSection = document.getElementById('mission-hint-section');
+        const showHintBtn = document.getElementById('btn-show-hint');
+        
+        if (hintSection) {
+            hintSection.style.display = 'block';
+        }
+        if (showHintBtn) {
+            showHintBtn.style.display = 'none';
+        }
+        
+        // Clear timer since hint is now shown
+        if (this.hintTimer) {
+            clearTimeout(this.hintTimer);
+            this.hintTimer = null;
+        }
     }
 
     private showCompletionMessage(): void {

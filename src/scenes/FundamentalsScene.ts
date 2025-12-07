@@ -122,9 +122,9 @@ export class FundamentalsScene {
         `;
 
         hud.innerHTML = `
-            <div style="background: rgba(0, 0, 0, 0.7); padding: 15px; border-radius: 8px; border: 2px solid #4a90e2;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="color: #4a90e2; margin: 0;">Kubernetes Fundamentals</h2>
+            <div style="background: rgba(0, 0, 0, 0.85); padding: 20px; border-radius: 8px; border: 2px solid #4a90e2; max-width: 800px; backdrop-filter: blur(10px);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="color: #4a90e2; margin: 0; font-size: 24px;">Kubernetes Fundamentals</h2>
                     <button id="btn-back-menu" style="
                         background: rgba(74, 144, 226, 0.3);
                         color: #4a90e2;
@@ -133,11 +133,48 @@ export class FundamentalsScene {
                         border-radius: 5px;
                         cursor: pointer;
                         pointer-events: auto;
-                    ">Back to Menu</button>
+                        transition: all 0.3s;
+                    " onmouseover="this.style.background='rgba(74, 144, 226, 0.5)'" onmouseout="this.style.background='rgba(74, 144, 226, 0.3)'">Back to Menu</button>
                 </div>
-                <div id="mission-info" style="margin-top: 15px; color: #fff;">
-                    <p style="margin: 5px 0;"><strong>Current Mission:</strong> <span id="mission-name">Loading...</span></p>
-                    <p style="margin: 5px 0;"><strong>Progress:</strong> <span id="mission-progress">0/15</span></p>
+                
+                <div id="mission-info" style="color: #fff;">
+                    <div style="margin-bottom: 15px;">
+                        <p style="margin: 5px 0; font-size: 14px; color: #aaa;"><strong>Progress:</strong> <span id="mission-progress">0/15</span></p>
+                        <h3 id="mission-title" style="color: #4a90e2; margin: 10px 0; font-size: 20px;">Loading...</h3>
+                        <p id="mission-description" style="margin: 8px 0; line-height: 1.6; color: #ddd;">Loading mission details...</p>
+                    </div>
+                    
+                    <div id="mission-explanation-section" style="margin: 15px 0; padding: 12px; background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2; border-radius: 4px; display: none;">
+                        <h4 style="color: #4a90e2; margin: 0 0 8px 0; font-size: 16px;">📚 What You Will Learn</h4>
+                        <p id="mission-explanation" style="margin: 0; line-height: 1.6; color: #ccc; font-size: 14px;"></p>
+                    </div>
+                    
+                    <div id="mission-objectives-section" style="margin: 15px 0; display: none;">
+                        <h4 style="color: #4a90e2; margin: 0 0 8px 0; font-size: 16px;">🎯 Objectives</h4>
+                        <ul id="mission-objectives" style="margin: 0; padding-left: 20px; color: #ddd; line-height: 1.8; font-size: 14px;"></ul>
+                    </div>
+                    
+                    <div id="mission-hint-section" style="margin: 15px 0; padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; display: none;">
+                        <h4 style="color: #ffc107; margin: 0 0 8px 0; font-size: 16px;">💡 Hint</h4>
+                        <p id="mission-hint" style="margin: 0; line-height: 1.6; color: #ffd54f; font-size: 14px;"></p>
+                        <div id="mission-example" style="margin-top: 8px; padding: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; color: #4a90e2; display: none;">
+                            <strong style="color: #4a90e2;">Example:</strong> <code id="mission-example-command" style="color: #00ff00;"></code>
+                        </div>
+                    </div>
+                    
+                    <button id="btn-show-hint" style="
+                        background: rgba(255, 193, 7, 0.2);
+                        color: #ffc107;
+                        border: 1px solid #ffc107;
+                        padding: 8px 16px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        pointer-events: auto;
+                        font-size: 14px;
+                        margin-top: 10px;
+                        transition: all 0.3s;
+                        display: none;
+                    " onmouseover="this.style.background='rgba(255, 193, 7, 0.3)'" onmouseout="this.style.background='rgba(255, 193, 7, 0.2)'">💡 Show Hint</button>
                 </div>
             </div>
         `;
