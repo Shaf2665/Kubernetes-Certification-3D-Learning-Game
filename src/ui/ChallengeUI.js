@@ -462,12 +462,29 @@ export class ChallengeUI {
             return;
         }
         
-        taskList.innerHTML = tasks.map((task, index) => `
-            <div class="task-item ${task.completed ? 'completed' : ''}" data-task-index="${index}">
+        // Find the first incomplete task index
+        const firstIncompleteIndex = tasks.findIndex(task => !task.completed);
+        
+        taskList.innerHTML = tasks.map((task, index) => {
+            // Mark the first incomplete task as "current" (next to do)
+            const isCurrent = !task.completed && index === firstIncompleteIndex;
+            return `
+            <div class="task-item ${task.completed ? 'completed' : ''} ${isCurrent ? 'current' : ''}" data-task-index="${index}">
                 <span class="task-checkbox">${task.completed ? '✓' : '○'}</span>
                 <span class="task-text">${task.text}</span>
             </div>
-        `).join('');
+        `;
+        }).join('');
+        
+        // Auto-scroll to the current task if it exists
+        if (firstIncompleteIndex >= 0) {
+            setTimeout(() => {
+                const currentTaskItem = taskList.querySelector(`[data-task-index="${firstIncompleteIndex}"]`);
+                if (currentTaskItem) {
+                    currentTaskItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 100);
+        }
     }
 
     toggleTaskPanel() {
@@ -494,19 +511,34 @@ export class ChallengeUI {
             const task = this.currentChallenge.tasks[taskIndex];
             if (!task.completed) {
                 task.completed = true;
-                this.updateTaskPanel();
                 
-                // Show visual feedback
+                // Ensure task panel is visible to show progress
+                const taskPanel = document.getElementById('task-panel');
+                if (taskPanel && taskPanel.classList.contains('hidden')) {
+                    taskPanel.classList.remove('hidden');
+                }
+                
+                // Show visual feedback first
                 const taskList = document.getElementById('task-list');
                 if (taskList) {
                     const taskItem = taskList.querySelector(`[data-task-index="${taskIndex}"]`);
                     if (taskItem) {
                         taskItem.classList.add('task-completed-animation');
-                        setTimeout(() => {
-                            taskItem.classList.remove('task-completed-animation');
-                        }, 1000);
                     }
                 }
+                
+                // Update the panel to show next task
+                setTimeout(() => {
+                    this.updateTaskPanel();
+                    
+                    // Remove animation class after update
+                    if (taskList) {
+                        const taskItem = taskList.querySelector(`[data-task-index="${taskIndex}"]`);
+                        if (taskItem) {
+                            taskItem.classList.remove('task-completed-animation');
+                        }
+                    }
+                }, 500);
             }
         }
     }
