@@ -99,7 +99,7 @@ export class Tutorial {
                     <h4>🎯 Completing Challenges</h4>
                     <ul class="tutorial-list">
                         <li>Read the challenge description in the bottom-left panel</li>
-                        <li>Press <strong>`</strong> (backtick) to open the terminal</li>
+                        <li>Press <strong>\`</strong> (backtick) to open the terminal</li>
                         <li>Type kubectl commands to complete the task</li>
                         <li>Watch the 3D cluster update in real-time</li>
                     </ul>
@@ -107,7 +107,7 @@ export class Tutorial {
                 <div class="guide-section">
                     <h4>⌨️ Controls</h4>
                     <ul class="tutorial-list">
-                        <li><strong>`</strong> key - Open/Close terminal</li>
+                        <li><strong>\`</strong> key - Open/Close terminal</li>
                         <li><strong>⏸</strong> button - Pause game</li>
                         <li><strong>📋</strong> button - View tasks</li>
                     </ul>
