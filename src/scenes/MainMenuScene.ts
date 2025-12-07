@@ -61,11 +61,14 @@ export class MainMenuScene {
 
         const fundamentalsButtonStyle = isJourneyComplete 
             ? 'background: #4a90e2; color: white; cursor: pointer;'
-            : 'background: rgba(100, 100, 100, 0.5); color: #888; cursor: not-allowed;';
+            : 'background: rgba(100, 100, 100, 0.5); color: #888; cursor: not-allowed; pointer-events: none; opacity: 0.6;';
 
         const fundamentalsButtonText = isJourneyComplete 
             ? 'Start Fundamentals'
             : '🔒 Complete Learning Journey First';
+        
+        const fundamentalsButtonDisabled = isJourneyComplete ? '' : 'disabled';
+        const fundamentalsButtonTitle = isJourneyComplete ? '' : 'title="Complete the Learning Journey to unlock Fundamentals missions"';
 
         menuContainer.innerHTML = `
             <div style="text-align: center;">
@@ -74,7 +77,7 @@ export class MainMenuScene {
                     Master Kubernetes through interactive 3D missions
                 </p>
                 <div style="display: flex; flex-direction: column; gap: 15px; min-width: 300px;">
-                    <button id="btn-fundamentals" style="
+                    <button id="btn-fundamentals" ${fundamentalsButtonDisabled} ${fundamentalsButtonTitle} style="
                         ${fundamentalsButtonStyle}
                         border: none;
                         padding: 15px 30px;
@@ -82,7 +85,7 @@ export class MainMenuScene {
                         font-size: 18px;
                         transition: all 0.3s;
                         position: relative;
-                    ">${fundamentalsButtonText}</button>
+                    " tabindex="${isJourneyComplete ? '0' : '-1'}">${fundamentalsButtonText}</button>
                     ${!isJourneyComplete ? `
                     <div style="
                         margin-top: 10px;
@@ -158,22 +161,43 @@ export class MainMenuScene {
         }
 
         // Add button event listeners
-        const fundamentalsBtn = document.getElementById('btn-fundamentals');
+        const fundamentalsBtn = document.getElementById('btn-fundamentals') as HTMLButtonElement;
         const labBtn = document.getElementById('btn-lab');
 
         if (fundamentalsBtn) {
-            const newBtn = fundamentalsBtn.cloneNode(true) as HTMLElement;
-            fundamentalsBtn.parentNode?.replaceChild(newBtn, fundamentalsBtn);
-            
-            newBtn.addEventListener('click', () => {
-                menuContainer.style.display = 'none';
-                if (!isJourneyComplete) {
-                    // Start learning journey instead
-                    document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'intro' } }));
-                } else {
+            // Only attach click handler if journey is complete
+            if (isJourneyComplete) {
+                const newBtn = fundamentalsBtn.cloneNode(true) as HTMLButtonElement;
+                fundamentalsBtn.parentNode?.replaceChild(newBtn, fundamentalsBtn);
+                
+                newBtn.addEventListener('click', () => {
+                    menuContainer.style.display = 'none';
                     document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'fundamentals' } }));
-                }
-            });
+                });
+            } else {
+                // Ensure button is truly disabled - no navigation handler attached
+                fundamentalsBtn.disabled = true;
+                fundamentalsBtn.setAttribute('aria-disabled', 'true');
+                fundamentalsBtn.style.pointerEvents = 'none';
+                fundamentalsBtn.style.opacity = '0.6';
+                fundamentalsBtn.style.cursor = 'not-allowed';
+                fundamentalsBtn.tabIndex = -1;
+                
+                // Prevent any keyboard activation
+                fundamentalsBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
+                
+                // Prevent any click events (defense in depth)
+                fundamentalsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true); // Use capture phase to catch early
+            }
         }
 
         if (labBtn) {
