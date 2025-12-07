@@ -77,7 +77,7 @@ export class ChallengeMissionManager {
             if (this.currentChallenge?.goal.type === 'deploymentScaled') {
                 this.progress.deploymentReplicas = Math.max(
                     this.progress.deploymentReplicas,
-                    data.replicas || 0
+                    data.newReplicas || data.replicas || 0
                 );
                 this.checkCompletion();
             }
