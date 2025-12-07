@@ -243,6 +243,18 @@ export class FundamentalsScene {
                         </div>
                     </div>
                     
+                    <div class="collapsible-section" data-section="prerequisites" data-expanded="false" style="margin: 10px 0; pointer-events: auto; display: none;" id="mission-prerequisites-section">
+                        <div class="section-header" data-section-id="prerequisites" style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: rgba(255, 152, 0, 0.1); border-radius: 4px; user-select: none; pointer-events: auto;">
+                            <span class="section-arrow" style="margin-right: 8px; transition: transform 0.3s; pointer-events: none;">▶</span>
+                            <h4 style="color: #ff9800; margin: 0; font-size: 16px; pointer-events: none;">📋 Prerequisites</h4>
+                        </div>
+                        <div class="section-content" id="mission-prerequisites-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s;">
+                            <div style="padding: 12px; padding-top: 8px;">
+                                <ul id="mission-prerequisites-list" style="margin: 0; padding-left: 20px; color: #ddd; line-height: 1.8; font-size: 14px;"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div style="display: flex; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(74, 144, 226, 0.3);">
                         <button id="btn-toggle-all" style="
                             background: rgba(74, 144, 226, 0.2);

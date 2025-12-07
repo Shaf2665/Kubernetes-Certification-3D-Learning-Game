@@ -6,6 +6,15 @@ import { kubeEvents } from '../kubernetes/KubeEventEmitter.js';
 import { ProgressionSystem } from './ProgressionSystem.js';
 import { CampaignManager } from './CampaignManager.js';
 
+export interface MissionPrerequisites {
+    requiresPod?: boolean;
+    requiresDeployment?: boolean;
+    requiresReplicaSet?: boolean;
+    requiresService?: boolean;
+    requiresConfigMap?: boolean;
+    requiresSecret?: boolean;
+}
+
 export interface Mission {
     id: number;
     title: string;
@@ -18,6 +27,7 @@ export interface Mission {
     storyIntro?: string;       // Story introduction for the mission
     chapter?: number;          // Chapter this mission belongs to
     xp?: number;               // XP reward (defaults to xpReward if not set)
+    prerequisites?: MissionPrerequisites; // Prerequisites that must be met
     completed: boolean;
     xpReward: number;
     checkCompletion?: (eventType: string, data: any) => boolean;
@@ -141,6 +151,12 @@ export class MissionsManager {
         kubeEvents.on('secretCreated', (data) => {
             console.log('[MissionsManager] Received secretCreated event:', data);
             this.handleEvent('secretCreated', data);
+        });
+
+        // Listen for replicaSet creation
+        kubeEvents.on('replicaSetCreated', (data) => {
+            console.log('[MissionsManager] Received replicaSetCreated event:', data);
+            this.handleEvent('replicaSetCreated', data);
         });
     }
 
@@ -326,6 +342,9 @@ export class MissionsManager {
             if (whyMattersEl) {
                 whyMattersEl.textContent = currentMission.whyThisMatters;
             }
+
+            // Update prerequisites section
+            this.updatePrerequisitesDisplay(currentMission);
 
             // Collapse all sections when new mission starts (except title & description)
             setTimeout(() => {

@@ -200,6 +200,27 @@ export class ClusterSimulator {
         deployment.setReplicas(replicas);
         this.deployments.set(name, deployment);
 
+        // Create ReplicaSet for deployment (Deployments create ReplicaSets automatically)
+        const rsName = `${name}-rs`;
+        const rsPos = new Vector3(
+            pos.x,
+            pos.y - 0.5,
+            pos.z
+        );
+        const replicaSet = new ReplicaSetEntity(rsName, this.scene, rsPos);
+        replicaSet.setReplicas(replicas);
+        this.replicaSets.set(rsName, replicaSet);
+        deployment.setReplicaSet(replicaSet);
+
+        // Emit replicaSet created event
+        kubeEvents.emit('replicaSetCreated', {
+            name: rsName,
+            namespace: 'default',
+            replicas: replicas,
+            replicaSet: replicaSet,
+            deploymentName: name
+        });
+
         // Emit deployment created event
         kubeEvents.emit('deploymentCreated', {
             name: name,
@@ -351,6 +372,22 @@ export class ClusterSimulator {
 
     getDeployments(): Map<string, DeploymentEntity> {
         return this.deployments;
+    }
+
+    getServices(): Map<string, ServiceEntity> {
+        return this.services;
+    }
+
+    getConfigMaps(): Map<string, ConfigMapEntity> {
+        return this.configMaps;
+    }
+
+    getSecrets(): Map<string, SecretEntity> {
+        return this.secrets;
+    }
+
+    getReplicaSets(): Map<string, ReplicaSetEntity> {
+        return this.replicaSets;
     }
 
     getNodes(): Map<string, NodeEntity> {

@@ -10,6 +10,7 @@ export class DeploymentEntity {
     private name: string;
     private replicas: number = 1;
     private pods: PodEntity[] = [];
+    private replicaSet: any = null;
 
     constructor(name: string, scene: Scene, position: Vector3 = Vector3.Zero()) {
         this.name = name;
@@ -64,6 +65,14 @@ export class DeploymentEntity {
 
     getPosition(): Vector3 {
         return this.mesh.position;
+    }
+
+    setReplicaSet(replicaSet: any): void {
+        this.replicaSet = replicaSet;
+    }
+
+    getReplicaSet(): any {
+        return this.replicaSet;
     }
 
     dispose(): void {

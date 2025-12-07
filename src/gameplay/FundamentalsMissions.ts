@@ -1,7 +1,7 @@
 import { Mission } from './MissionsManager.js';
 
 /**
- * Defines all 15 Kubernetes Fundamentals missions with full educational content
+ * Defines all 15 Kubernetes Fundamentals missions with sequential, logical progression
  */
 export class FundamentalsMissions {
     static getMissions(): Mission[] {
@@ -31,16 +31,43 @@ export class FundamentalsMissions {
             },
             {
                 id: 2,
-                title: 'Scale a Deployment',
-                description: 'Deployments manage Pods and ensure the desired number of replicas are running.',
-                explanation: 'Deployments use ReplicaSets to maintain Pod count automatically. When you scale a Deployment, Kubernetes creates or removes Pods to match your desired state. This provides high availability and load distribution across your application.',
-                whyThisMatters: 'Deployments provide self-healing, rolling updates, and stable app management. In production, you need multiple replicas to handle traffic and survive failures. Scaling is a fundamental operation for maintaining application availability.',
+                title: 'Create Your First Deployment',
+                description: 'Now that you\'ve created a Pod, it\'s time to learn how Kubernetes manages multiple replicas of an application.',
+                explanation: 'Deployments are higher-level abstractions that manage Pods through ReplicaSets. When you create a Deployment, Kubernetes automatically creates a ReplicaSet, which then creates and manages Pods. Deployments provide declarative updates, rolling updates, and self-healing capabilities.',
+                whyThisMatters: 'Deployments are the recommended way to manage Pods in production. They provide self-healing, rolling updates, and stable app management. Understanding Deployments is crucial for managing real-world applications.',
                 storyIntro: 'As your Pods multiply, order must be established. Deployments rise to bring structure and resilience to your growing cluster.',
                 chapter: 1,
                 xp: 75,
+                prerequisites: {
+                    requiresPod: true
+                },
                 objectives: [
-                    'Create a Deployment',
-                    'Scale it up using kubectl'
+                    'Create a Deployment using kubectl',
+                    'Observe how Kubernetes automatically creates Pods'
+                ],
+                hint: 'kubectl create deployment mydeploy --image=nginx',
+                exampleCommand: 'kubectl create deployment mydeploy --image=nginx',
+                completed: false,
+                xpReward: 150,
+                checkCompletion: (eventType: string, _data: any) => {
+                    return eventType === 'deploymentCreated';
+                }
+            },
+            {
+                id: 3,
+                title: 'Scale a Deployment',
+                description: 'Learn how to scale your Deployment to handle more traffic and ensure high availability.',
+                explanation: 'Deployments use ReplicaSets to maintain Pod count automatically. When you scale a Deployment, Kubernetes creates or removes Pods to match your desired state. This provides high availability and load distribution across your application.',
+                whyThisMatters: 'Scaling is a fundamental operation for maintaining application availability. In production, you need multiple replicas to handle traffic and survive failures. Understanding how to scale Deployments is essential.',
+                storyIntro: 'With your Deployment established, you must now learn to scale it, multiplying your Pods to meet the demands of your application.',
+                chapter: 1,
+                xp: 75,
+                prerequisites: {
+                    requiresDeployment: true
+                },
+                objectives: [
+                    'Scale a Deployment to 3 or more replicas',
+                    'Observe how Kubernetes maintains the desired state'
                 ],
                 hint: 'Try: kubectl scale deployment mydeploy --replicas=3',
                 exampleCommand: 'kubectl scale deployment mydeploy --replicas=3',
@@ -51,40 +78,21 @@ export class FundamentalsMissions {
                 }
             },
             {
-                id: 3,
-                title: 'Fix a CrashLoopBackOff',
-                description: 'Some Pods crash repeatedly due to configuration or runtime errors.',
-                explanation: 'CrashLoopBackOff indicates repeated failure; debugging is key. This happens when a container starts, crashes, and Kubernetes keeps trying to restart it. Common causes include application errors, missing environment variables, incorrect image configuration, or resource constraints.',
-                whyThisMatters: 'Understanding Pod failures is critical to troubleshooting real clusters. In production, you\'ll encounter failing Pods regularly. Knowing how to diagnose and fix them quickly is essential for maintaining system reliability.',
-                storyIntro: 'Not all Pods awaken peacefully. Some stumble and fall, caught in an endless cycle of failure. Your task: break the loop and restore order.',
-                chapter: 1,
-                xp: 100,
-                objectives: [
-                    'Identify a failing Pod',
-                    'Check logs',
-                    'Fix and recreate the Pod'
-                ],
-                hint: 'Try: kubectl logs <pod-name>',
-                exampleCommand: 'kubectl logs <pod-name>',
-                completed: false,
-                xpReward: 200,
-                checkCompletion: (_eventType: string, _data: any) => {
-                    // This would need to check if a previously failing pod is now running
-                    return true; // Simplified for now
-                }
-            },
-            {
                 id: 4,
-                title: 'Create a Service',
+                title: 'Expose a Deployment using a Service',
                 description: 'Services expose Pods to stable networking inside or outside the cluster.',
-                explanation: 'Pods have ephemeral IPs; Services provide stable access. Since Pods can be created and destroyed, their IP addresses change. Services provide a stable endpoint that routes traffic to the correct Pods using labels and selectors.',
+                explanation: 'Pods have ephemeral IPs; Services provide stable access. Since Pods can be created and destroyed, their IP addresses change. Services provide a stable endpoint that routes traffic to the correct Pods using labels and selectors. This is essential for microservices communication.',
                 whyThisMatters: 'Without Services, Pods cannot reliably communicate. Services are essential for microservices architectures where different components need to find and talk to each other. They abstract away Pod lifecycle and provide consistent networking.',
                 storyIntro: 'In the network battlefield, Services emerge as the guardians of connectivity. They ensure your applications can communicate and be discovered.',
                 chapter: 2,
                 xp: 75,
+                prerequisites: {
+                    requiresDeployment: true
+                },
                 objectives: [
-                    'Create a Service',
-                    'Understand ClusterIP behavior'
+                    'Create a Service to expose your Deployment',
+                    'Understand ClusterIP behavior',
+                    'See how Services route traffic to Pods'
                 ],
                 hint: 'Try: kubectl expose deployment mydeploy --port=80 --target-port=80',
                 exampleCommand: 'kubectl expose deployment mydeploy --port=80 --target-port=80',
@@ -96,7 +104,33 @@ export class FundamentalsMissions {
             },
             {
                 id: 5,
-                title: 'Use a ConfigMap',
+                title: 'Understand and Observe ReplicaSets',
+                description: 'ReplicaSets ensure the correct number of Pod replicas are running.',
+                explanation: 'Deployments create ReplicaSets as controllers. ReplicaSets use label selectors to identify which Pods they manage. If a Pod is deleted or fails, the ReplicaSet automatically creates a new one to maintain the desired count. Understanding this relationship is key to understanding Kubernetes.',
+                whyThisMatters: 'Understanding the Pod → ReplicaSet → Deployment chain is foundational. This hierarchy is crucial for understanding how Kubernetes maintains desired state. When troubleshooting, you need to understand how these components interact.',
+                storyIntro: 'Behind every Deployment lies a ReplicaSet, the silent guardian ensuring your Pods never fall below the desired count.',
+                chapter: 2,
+                xp: 75,
+                prerequisites: {
+                    requiresDeployment: true
+                },
+                objectives: [
+                    'Inspect ReplicaSets created by your Deployment',
+                    'Delete a Pod and watch it regenerate',
+                    'Understand the relationship between Deployment, ReplicaSet, and Pods'
+                ],
+                hint: 'kubectl get rs',
+                exampleCommand: 'kubectl get rs',
+                completed: false,
+                xpReward: 150,
+                checkCompletion: (eventType: string, _data: any) => {
+                    // Check if ReplicaSet was created (happens automatically with Deployment)
+                    return eventType === 'replicaSetCreated' || eventType === 'deploymentCreated';
+                }
+            },
+            {
+                id: 6,
+                title: 'Create and Use a ConfigMap',
                 description: 'ConfigMaps store non-sensitive configuration data.',
                 explanation: 'They allow injecting environment variables or config files. ConfigMaps decouple configuration from container images, making applications more portable. You can create them from literal values, files, or directories, and mount them into Pods.',
                 whyThisMatters: 'Separates config from container images, a Kubernetes best practice. This allows you to use the same container image across different environments (dev, staging, prod) by just changing the ConfigMap. It\'s a fundamental pattern in cloud-native applications.',
@@ -105,7 +139,7 @@ export class FundamentalsMissions {
                 xp: 75,
                 objectives: [
                     'Create a ConfigMap',
-                    'Mount it or use env variables'
+                    'Mount it or use env variables in a Pod'
                 ],
                 hint: 'kubectl create configmap app-config --from-literal=MODE=dev',
                 exampleCommand: 'kubectl create configmap app-config --from-literal=MODE=dev',
@@ -116,8 +150,8 @@ export class FundamentalsMissions {
                 }
             },
             {
-                id: 6,
-                title: 'Use a Secret',
+                id: 7,
+                title: 'Create and Use a Secret',
                 description: 'Secrets store sensitive information like passwords.',
                 explanation: 'They are base64-encoded objects used securely within Pods. Secrets are similar to ConfigMaps but designed for sensitive data. While not encrypted by default, they should never be committed to version control and can be encrypted at rest in production clusters.',
                 whyThisMatters: 'Security is essential; Secrets prevent hardcoding credentials. In real-world applications, you need to store database passwords, API keys, and certificates securely. Using Secrets is the proper way to handle sensitive data in Kubernetes.',
@@ -137,30 +171,8 @@ export class FundamentalsMissions {
                 }
             },
             {
-                id: 7,
-                title: 'Understand ReplicaSets',
-                description: 'ReplicaSets ensure the correct number of Pod replicas.',
-                explanation: 'Deployments create ReplicaSets as controllers. ReplicaSets use label selectors to identify which Pods they manage. If a Pod is deleted or fails, the ReplicaSet automatically creates a new one to maintain the desired count.',
-                whyThisMatters: 'Understanding the Pod → ReplicaSet → Deployment chain is foundational. This hierarchy is crucial for understanding how Kubernetes maintains desired state. When troubleshooting, you need to understand how these components interact.',
-                storyIntro: 'Behind every Deployment lies a ReplicaSet, the silent guardian ensuring your Pods never fall below the desired count.',
-                chapter: 3,
-                xp: 75,
-                objectives: [
-                    'Inspect ReplicaSets',
-                    'Delete a Pod and watch it regenerate'
-                ],
-                hint: 'kubectl get rs',
-                exampleCommand: 'kubectl get rs',
-                completed: false,
-                xpReward: 150,
-                checkCompletion: (eventType: string, _data: any) => {
-                    // This could check if user has observed ReplicaSet behavior
-                    return eventType === 'deploymentCreated'; // Simplified
-                }
-            },
-            {
                 id: 8,
-                title: 'Create a Namespace',
+                title: 'Create a Namespace and Deploy Objects Into It',
                 description: 'Namespaces isolate resources within a cluster.',
                 explanation: 'Useful for teams, environments, or permissions. Namespaces act like virtual clusters within a physical cluster. Each namespace has its own set of resources and can have different access controls. Common namespaces include default, kube-system, and kube-public.',
                 whyThisMatters: 'Organizing workloads prevents naming conflicts and improves security. In multi-tenant environments, namespaces are essential for separating different teams or projects. They also help organize resources and implement RBAC policies.',
@@ -208,7 +220,7 @@ export class FundamentalsMissions {
                 explanation: 'Liveness restarts containers; readiness controls traffic. Liveness probes determine if a container is running. If it fails, Kubernetes restarts the container. Readiness probes determine if a container is ready to accept traffic. If it fails, the Pod is removed from Service endpoints.',
                 whyThisMatters: 'Critical for production-grade reliability. Properly configured probes ensure your application recovers from failures automatically and doesn\'t receive traffic before it\'s ready. This is essential for zero-downtime deployments.',
                 storyIntro: 'Health checks are the pulse of your cluster. Probes watch over your Pods, ensuring they are alive and ready to serve.',
-                chapter: 4,
+                chapter: 3,
                 xp: 100,
                 objectives: [
                     'Create a Pod with probes'
@@ -224,7 +236,7 @@ export class FundamentalsMissions {
             },
             {
                 id: 11,
-                title: 'Attach a Volume / PVC',
+                title: 'Attach a Volume (PVC)',
                 description: 'Volumes store persistent data for Pods.',
                 explanation: 'PVCs bind to PVs for dynamic storage. PersistentVolumeClaims (PVCs) are requests for storage that get bound to PersistentVolumes (PVs). StorageClasses define different storage types and enable dynamic provisioning. Data in volumes persists even when Pods are deleted.',
                 whyThisMatters: 'Stateful workloads rely on persistent storage. Databases, file storage, and stateful applications need data to survive Pod restarts. Understanding volumes is essential for deploying stateful applications in Kubernetes.',
@@ -246,7 +258,7 @@ export class FundamentalsMissions {
             },
             {
                 id: 12,
-                title: 'Use Node Affinity Rules',
+                title: 'Use Node Affinity',
                 description: 'Affinity lets you choose which nodes Pods prefer or require.',
                 explanation: 'Useful for performance, compliance, or hardware constraints. Node affinity allows you to constrain which nodes your Pod can be scheduled on. There are two types: required (hard requirement) and preferred (soft preference). This gives fine-grained control over Pod placement.',
                 whyThisMatters: 'Gives fine control over Pod scheduling. You might need Pods on nodes with specific hardware (GPUs, SSDs), for compliance reasons, or to co-locate Pods for performance. Understanding affinity is important for advanced cluster management.',
@@ -267,32 +279,12 @@ export class FundamentalsMissions {
             },
             {
                 id: 13,
-                title: 'Expose an Application (NodePort)',
-                description: 'NodePort lets external traffic reach your application.',
-                explanation: 'Simplest form of service exposure. NodePort Services expose your application on a port on each node in the cluster. External traffic can access your application by connecting to any node\'s IP address on the NodePort. Kubernetes allocates a port in the 30000-32767 range.',
-                whyThisMatters: 'Essential for accessing applications outside the cluster. While NodePort is simple, it\'s useful for development and testing. In production, LoadBalancer or Ingress are typically preferred, but understanding NodePort is foundational.',
-                storyIntro: 'The cluster\'s boundaries must be crossed. NodePort opens the gates, allowing external traffic to reach your applications.',
-                chapter: 5,
-                xp: 100,
-                objectives: [
-                    'Create NodePort service'
-                ],
-                hint: 'kubectl expose deployment myapp --type=NodePort',
-                exampleCommand: 'kubectl expose deployment myapp --type=NodePort --port=80',
-                completed: false,
-                xpReward: 200,
-                checkCompletion: (eventType: string, data: any) => {
-                    return eventType === 'serviceCreated' && data && data.type === 'NodePort';
-                }
-            },
-            {
-                id: 14,
                 title: 'Inspect Cluster Events',
                 description: 'Events provide insight into what the cluster is doing.',
                 explanation: 'They help diagnose scheduling issues and warnings. Kubernetes Events provide a record of what has happened in your cluster. They show when resources are created, updated, deleted, or when errors occur. Events help you understand the lifecycle of resources and diagnose problems.',
                 whyThisMatters: 'Understanding events is key to debugging. When something goes wrong, events are often the first place to look. They provide detailed information about what Kubernetes is doing and why operations succeed or fail.',
                 storyIntro: 'Every action leaves a trace. Events are the chronicles of your cluster, revealing the hidden stories of what transpires within.',
-                chapter: 5,
+                chapter: 4,
                 xp: 75,
                 objectives: [
                     'Trigger events',
@@ -308,18 +300,49 @@ export class FundamentalsMissions {
                 }
             },
             {
+                id: 14,
+                title: 'Fix a CrashLoopBackOff',
+                description: 'Some Pods crash repeatedly due to configuration or runtime errors.',
+                explanation: 'CrashLoopBackOff indicates repeated failure; debugging is key. This happens when a container starts, crashes, and Kubernetes keeps trying to restart it. Common causes include application errors, missing environment variables, incorrect image configuration, or resource constraints.',
+                whyThisMatters: 'Understanding Pod failures is critical to troubleshooting real clusters. In production, you\'ll encounter failing Pods regularly. Knowing how to diagnose and fix them quickly is essential for maintaining system reliability.',
+                storyIntro: 'Not all Pods awaken peacefully. Some stumble and fall, caught in an endless cycle of failure. Your task: break the loop and restore order.',
+                chapter: 4,
+                xp: 100,
+                prerequisites: {
+                    requiresPod: true
+                },
+                objectives: [
+                    'Identify a failing Pod',
+                    'Check logs',
+                    'Fix and recreate the Pod'
+                ],
+                hint: 'Try: kubectl logs <pod-name>',
+                exampleCommand: 'kubectl logs <pod-name>',
+                completed: false,
+                xpReward: 200,
+                checkCompletion: (_eventType: string, _data: any) => {
+                    // This would need to check if a previously failing pod is now running
+                    return true; // Simplified for now
+                }
+            },
+            {
                 id: 15,
-                title: 'Build a Small App Stack',
-                description: 'Deploy a full 3-tier application.',
+                title: 'Deploy a Multi-Component Application',
+                description: 'Deploy a full 3-tier application combining everything you\'ve learned.',
                 explanation: 'Combines everything learned so far. Real-world applications require multiple components working together: Deployments for running applications, Services for networking, ConfigMaps for configuration, and proper resource management. This challenge tests your ability to orchestrate these components.',
                 whyThisMatters: 'Replicates real-world Kubernetes deployments. In production, you\'ll deploy complex applications with multiple components. This final challenge demonstrates your ability to combine all the concepts you\'ve learned into a cohesive, production-like system.',
                 storyIntro: 'The final trial awaits. Combine all your knowledge to build a production-ready application stack. You are now a Guardian of Production.',
-                chapter: 6,
+                chapter: 5,
                 xp: 150,
+                prerequisites: {
+                    requiresDeployment: true,
+                    requiresService: true
+                },
                 objectives: [
-                    'Deploy backend',
-                    'Deploy frontend',
-                    'Expose service'
+                    'Deploy backend Deployment',
+                    'Deploy frontend Deployment',
+                    'Expose services',
+                    'Use ConfigMaps for configuration'
                 ],
                 hint: 'Use YAML files for multi-component deployments',
                 exampleCommand: 'kubectl create deployment backend --image=nginx && kubectl create deployment frontend --image=nginx && kubectl create service clusterip backend --tcp=80:80',
