@@ -4,11 +4,12 @@ import * as THREE from 'three';
  * Manages interactions with 3D objects (click, hover, tooltips)
  */
 export class InteractionManager {
-    constructor(camera, scene, renderer, k8sManager) {
+    constructor(camera, scene, renderer, k8sManager, challengeUI = null) {
         this.camera = camera;
         this.scene = scene;
         this.renderer = renderer;
         this.k8sManager = k8sManager;
+        this.challengeUI = challengeUI;
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         this.hoveredObject = null;
@@ -17,6 +18,10 @@ export class InteractionManager {
         this.infoPanel = null;
         
         this.init();
+    }
+    
+    setChallengeUI(challengeUI) {
+        this.challengeUI = challengeUI;
     }
 
     init() {
@@ -108,9 +113,58 @@ export class InteractionManager {
             
             if (resource) {
                 this.selectResource(resource);
+                
+                // Check if current challenge is an observation challenge (no command required)
+                // If so, clicking on a node should complete the challenge
+                if (this.challengeUI && this.challengeUI.currentChallenge) {
+                    const challenge = this.challengeUI.currentChallenge;
+                    if (!challenge.command && (resource.name && resource.name.startsWith('node-'))) {
+                        // This is an observation challenge and user clicked on a node
+                        this.handleObservationChallengeComplete();
+                    }
+                }
             }
         } else {
             this.deselectResource();
+        }
+    }
+    
+    handleObservationChallengeComplete() {
+        if (!this.challengeUI || !this.challengeUI.currentChallenge) return;
+        
+        const challenge = this.challengeUI.currentChallenge;
+        
+        // Check if challenge is already completed
+        if (challenge.completed) return;
+        
+        // Only handle if this is an observation challenge (no command required)
+        if (challenge.command) return;
+        
+        // Mark all tasks as complete
+        if (challenge.tasks && challenge.tasks.length > 0) {
+            // Mark each incomplete task as complete
+            challenge.tasks.forEach((task, index) => {
+                if (!task.completed) {
+                    this.challengeUI.markTaskComplete(index);
+                }
+            });
+            
+            // After a delay, check if all tasks are now complete and show completion modal
+            setTimeout(() => {
+                const allTasksCompleted = challenge.tasks.every(t => t.completed);
+                if (allTasksCompleted && !challenge.completed) {
+                    challenge.complete();
+                    setTimeout(() => {
+                        this.challengeUI.showCompletionModal();
+                    }, 500);
+                }
+            }, 600);
+        } else {
+            // If no tasks, just complete the challenge directly
+            challenge.complete();
+            setTimeout(() => {
+                this.challengeUI.showCompletionModal();
+            }, 500);
         }
     }
 

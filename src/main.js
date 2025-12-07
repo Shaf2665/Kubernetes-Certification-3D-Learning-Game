@@ -104,6 +104,11 @@ class KubernetesGame {
             if (this.terminal) {
                 this.terminal.setChallengeUI(this.challengeUI);
             }
+            
+            // Connect challengeUI to interaction manager for observation challenges
+            if (this.interactionManager) {
+                this.interactionManager.setChallengeUI(this.challengeUI);
+            }
         }
 
         // Setup screen navigation

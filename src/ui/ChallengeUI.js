@@ -542,8 +542,10 @@ export class ChallengeUI {
                     }
                 }
                 
-                // Update the panel to show next task
-                // Use a shorter delay to make the transition smoother
+                // Check if all tasks are completed
+                const allTasksCompleted = this.currentChallenge.tasks.every(t => t.completed);
+                
+                // Update the panel to show next task (or completion state)
                 setTimeout(() => {
                     this.updateTaskPanel();
                     
@@ -553,6 +555,20 @@ export class ChallengeUI {
                         if (taskItem) {
                             taskItem.classList.remove('task-completed-animation');
                         }
+                    }
+                    
+                    // If all tasks are completed, mark challenge as complete
+                    if (allTasksCompleted && !this.currentChallenge.completed) {
+                        // Mark challenge as complete
+                        this.currentChallenge.complete();
+                        
+                        // Show completion modal (only if not already shown)
+                        setTimeout(() => {
+                            const completionModal = document.getElementById('challenge-complete-modal');
+                            if (completionModal && completionModal.classList.contains('hidden')) {
+                                this.showCompletionModal();
+                            }
+                        }, 500);
                     }
                 }, 300);
             }
