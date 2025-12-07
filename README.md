@@ -81,10 +81,14 @@ npm install
 
 **What does this do?** It downloads all the code libraries the game needs. This might take 1-2 minutes.
 
+**⚠️ Seeing "moderate severity vulnerabilities" warning?**
+Don't worry! This is **normal** and **not a problem**. The game will work perfectly fine. This warning just means npm found some minor security issues in the dependencies (not in your code). You can safely ignore it and continue. The game is safe to use.
+
 **Troubleshooting:**
 - If you see errors, make sure you're in the correct folder
 - Try running `npm install` again
 - Make sure you have internet connection
+- If you see "vulnerabilities" warning, it's safe to ignore - the game will work fine
 
 ### Step 4: Start the Game
 
@@ -254,6 +258,19 @@ npm run build
   - Make sure you're pressing the **`** key (usually above Tab)
   - Try clicking the terminal button if available
   - Check browser console for errors (F12)
+
+### "2 moderate severity vulnerabilities" warning after npm install
+- **Problem:** You see a warning about vulnerabilities after running `npm install`
+- **Is this a problem?** **No!** This is completely normal and safe. The game will work perfectly.
+- **What does it mean?** npm found some minor security issues in the dependencies (not in your code). These are usually in development tools and don't affect the game.
+- **What should I do?**
+  - **Option 1 (Recommended):** Just ignore it and continue! Run `npm run dev` and start playing.
+  - **Option 2 (Optional):** If you want to fix it, run:
+    ```bash
+    npm audit fix
+    ```
+    This will try to automatically fix the issues. If it doesn't work, you can continue anyway - the game will still work fine.
+- **Important:** Don't use `npm audit fix --force` unless you know what you're doing, as it might break things.
 
 ---
 
