@@ -173,6 +173,11 @@ class KubernetesGame {
         // Listen for screen change events
         document.addEventListener('show-screen', (e) => {
             this.showScreen(e.detail.screen);
+            
+            // Update profile screen when shown
+            if (e.detail.screen === 'profile-screen') {
+                this.updateProfileScreen();
+            }
         });
 
         // Back button handlers
@@ -196,7 +201,7 @@ class KubernetesGame {
         });
 
         // Pause button - setup after game engine is initialized
-        this.setupPauseButton();
+        // Note: setupPauseButton is called in init() after gameEngine is created
     }
 
     setupPauseButton() {
@@ -304,6 +309,47 @@ class KubernetesGame {
                 // Don't render when not on game screen
                 // this.gameEngine.stop();
             }
+        }
+    }
+
+    updateProfileScreen() {
+        if (!this.gameSystem || !this.achievementSystem) return;
+
+        // Update profile statistics
+        const totalXP = this.gameSystem.getXP();
+        const level = this.gameSystem.getLevel();
+        const challengesCompleted = this.gameSystem.getChallengesCompleted();
+        const streak = this.gameSystem.getStreak();
+
+        const totalXPEl = document.getElementById('profile-total-xp');
+        const levelEl = document.getElementById('profile-level');
+        const challengesEl = document.getElementById('profile-challenges');
+        const streakEl = document.getElementById('profile-streak');
+
+        if (totalXPEl) totalXPEl.textContent = totalXP.toLocaleString();
+        if (levelEl) levelEl.textContent = level;
+        if (challengesEl) challengesEl.textContent = challengesCompleted;
+        if (streakEl) streakEl.textContent = `${streak} ${streak === 1 ? 'day' : 'days'}`;
+
+        // Update badges grid
+        const badgesGrid = document.getElementById('badges-grid');
+        if (badgesGrid) {
+            const unlockedAchievements = this.achievementSystem.getUnlockedAchievements();
+            const allAchievements = this.achievementSystem.getAllAchievements();
+
+            badgesGrid.innerHTML = '';
+
+            allAchievements.forEach(achievement => {
+                const isUnlocked = unlockedAchievements.some(a => a.id === achievement.id);
+                const badgeItem = document.createElement('div');
+                badgeItem.className = `badge-item ${isUnlocked ? 'unlocked' : ''}`;
+                badgeItem.innerHTML = `
+                    <div class="badge-icon">${achievement.icon}</div>
+                    <div class="badge-name">${achievement.name}</div>
+                    ${!isUnlocked ? '<div class="badge-locked">🔒</div>' : ''}
+                `;
+                badgesGrid.appendChild(badgeItem);
+            });
         }
     }
 }

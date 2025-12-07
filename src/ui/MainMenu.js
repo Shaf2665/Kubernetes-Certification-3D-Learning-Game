@@ -62,6 +62,14 @@ export class MainMenu {
             });
         }
 
+        // Settings button
+        const btnSettings = document.getElementById('btn-settings');
+        if (btnSettings) {
+            btnSettings.addEventListener('click', () => {
+                this.showSettings();
+            });
+        }
+
         // Listen for XP and level updates
         this.gameSystem.on('xp-gained', (data) => {
             this.updatePlayerStats();
@@ -156,6 +164,11 @@ export class MainMenu {
     showLeaderboard() {
         // TODO: Implement leaderboard
         alert('Leaderboard coming soon!');
+    }
+
+    showSettings() {
+        // TODO: Implement settings
+        alert('Settings coming soon!');
     }
 
     showLevelUpAnimation(level) {
