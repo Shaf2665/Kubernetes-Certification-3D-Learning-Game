@@ -73,6 +73,11 @@ class KubernetesGame {
         // Setup screen navigation
         this.setupScreenNavigation();
         
+        // Setup pause button after game engine is initialized
+        if (this.gameEngine) {
+            this.setupPauseButton();
+        }
+        
         // Setup global event listeners
         this.setupGlobalListeners();
         
@@ -122,6 +127,54 @@ class KubernetesGame {
         document.getElementById('btn-close-terminal')?.addEventListener('click', () => {
             document.getElementById('terminal-panel').classList.add('hidden');
         });
+
+        // Pause button - setup after game engine is initialized
+        this.setupPauseButton();
+    }
+
+    setupPauseButton() {
+        const pauseButton = document.getElementById('btn-pause');
+        if (pauseButton) {
+            pauseButton.addEventListener('click', () => {
+                if (this.gameEngine) {
+                    const isPaused = this.gameEngine.togglePause();
+                    // Update button icon
+                    pauseButton.textContent = isPaused ? '▶' : '⏸';
+                    pauseButton.title = isPaused ? 'Resume (Game Paused)' : 'Pause Game';
+                    
+                    // Show pause overlay
+                    if (isPaused) {
+                        this.showPauseOverlay();
+                    } else {
+                        this.hidePauseOverlay();
+                    }
+                }
+            });
+        }
+    }
+
+    showPauseOverlay() {
+        let overlay = document.getElementById('pause-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'pause-overlay';
+            overlay.className = 'pause-overlay';
+            overlay.innerHTML = `
+                <div class="pause-content">
+                    <h2>⏸ Game Paused</h2>
+                    <p>Click the resume button (▶) to continue</p>
+                </div>
+            `;
+            document.getElementById('game-screen').appendChild(overlay);
+        }
+        overlay.classList.remove('hidden');
+    }
+
+    hidePauseOverlay() {
+        const overlay = document.getElementById('pause-overlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
+        }
     }
 
     setupGlobalListeners() {

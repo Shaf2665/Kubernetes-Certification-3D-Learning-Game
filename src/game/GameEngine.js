@@ -37,12 +37,24 @@ export class GameEngine {
         // Update callback
         this.updateCallback = null;
         
+        // Pause state
+        this.isPaused = false;
+        this.animationFrameId = null;
+        
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
     }
 
     animate() {
-        requestAnimationFrame(this.animate);
+        this.animationFrameId = requestAnimationFrame(() => this.animate());
+        
+        // Always render the scene
+        this.renderer.render(this.scene, this.camera);
+        
+        // Only update if not paused
+        if (this.isPaused) {
+            return;
+        }
         
         const delta = this.clock.getDelta();
         
@@ -55,17 +67,49 @@ export class GameEngine {
         if (this.updateCallback) {
             this.updateCallback(delta);
         }
-        
-        this.renderer.render(this.scene, this.camera);
     }
 
     start() {
+        if (this.animationFrameId) {
+            return; // Already running
+        }
+        this.isPaused = false;
+        this.clock.start();
         this.animate();
     }
 
     stop() {
         // Stop animation loop if needed
-        cancelAnimationFrame(this.animate);
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+    }
+
+    pause() {
+        if (this.isPaused) return;
+        this.isPaused = true;
+        // Don't stop the clock, just pause updates
+    }
+
+    resume() {
+        if (!this.isPaused) return;
+        this.isPaused = false;
+        // Reset clock to avoid large delta jump
+        this.clock.getDelta();
+    }
+
+    togglePause() {
+        if (this.isPaused) {
+            this.resume();
+        } else {
+            this.pause();
+        }
+        return this.isPaused;
+    }
+
+    getPaused() {
+        return this.isPaused;
     }
 
     onWindowResize() {

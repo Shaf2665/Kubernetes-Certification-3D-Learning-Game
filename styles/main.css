@@ -449,3 +449,39 @@ body {
     background: var(--primary-color);
 }
 
+/* Pause Overlay */
+.pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+    pointer-events: none;
+}
+
+.pause-overlay.hidden {
+    display: none;
+}
+
+.pause-content {
+    text-align: center;
+    color: var(--text-primary);
+    pointer-events: auto;
+}
+
+.pause-content h2 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.pause-content p {
+    font-size: 20px;
+    color: var(--text-secondary);
+}
+
