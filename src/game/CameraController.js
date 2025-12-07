@@ -26,6 +26,8 @@ export class CameraController {
     }
 
     setupEventListeners() {
+        if (!this.canvas) return;
+        
         // Mouse drag for rotation
         this.canvas.addEventListener('mousedown', (e) => {
             if (e.button === 0) { // Left mouse button

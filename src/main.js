@@ -136,7 +136,10 @@ class KubernetesGame {
             hint.id = 'camera-hint';
             hint.className = 'camera-hint';
             hint.innerHTML = '💡 Drag to rotate • Scroll to zoom • Click objects to inspect';
-            document.getElementById('game-screen').appendChild(hint);
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen) {
+                gameScreen.appendChild(hint);
+            }
             
             // Auto-hide after 5 seconds
             setTimeout(() => {

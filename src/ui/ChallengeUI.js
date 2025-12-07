@@ -156,7 +156,9 @@ export class ChallengeUI {
     }
 
     checkTaskCompletion(command, result) {
-        if (!this.currentChallenge || !this.currentChallenge.tasks || !result.success) return;
+        if (!this.currentChallenge || !this.currentChallenge.tasks || !result || !result.success) return;
+        
+        if (!command || typeof command !== 'string') return;
         
         const commandLower = command.toLowerCase();
         let taskCompleted = false;

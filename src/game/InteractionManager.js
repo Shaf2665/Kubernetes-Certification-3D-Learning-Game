@@ -29,20 +29,28 @@ export class InteractionManager {
     }
 
     createTooltip() {
+        const gameScreen = document.getElementById('game-screen');
+        if (!gameScreen) return;
+        
         this.tooltip = document.createElement('div');
         this.tooltip.id = 'object-tooltip';
         this.tooltip.className = 'object-tooltip hidden';
-        document.getElementById('game-screen').appendChild(this.tooltip);
+        gameScreen.appendChild(this.tooltip);
     }
 
     createInfoPanel() {
+        const gameScreen = document.getElementById('game-screen');
+        if (!gameScreen) return;
+        
         this.infoPanel = document.createElement('div');
         this.infoPanel.id = 'resource-info-panel';
         this.infoPanel.className = 'resource-info-panel hidden';
-        document.getElementById('game-screen').appendChild(this.infoPanel);
+        gameScreen.appendChild(this.infoPanel);
     }
 
     setupEventListeners() {
+        if (!this.renderer || !this.renderer.domElement) return;
+        
         const canvas = this.renderer.domElement;
         
         // Mouse move for hover
@@ -83,7 +91,11 @@ export class InteractionManager {
     }
 
     onMouseClick(event) {
+        if (!this.renderer || !this.renderer.domElement || !this.camera || !this.scene) return;
+        
         const rect = this.renderer.domElement.getBoundingClientRect();
+        if (!rect || rect.width === 0 || rect.height === 0) return;
+        
         this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         
@@ -103,22 +115,34 @@ export class InteractionManager {
     }
 
     findResourceFromObject(object) {
+        if (!object || !this.k8sManager) return null;
+        
         // Traverse up the object hierarchy to find the container
         let current = object;
-        while (current) {
-            if (current.name && current.name.startsWith('pod-')) {
-                const podName = current.name.replace('pod-', '');
-                return this.k8sManager.pods.find(p => p.name === podName);
-            } else if (current.name && current.name.startsWith('node-')) {
-                const nodeName = current.name.replace('node-', '');
-                return this.k8sManager.nodes.find(n => n.name === nodeName);
+        let depth = 0;
+        const maxDepth = 20; // Prevent infinite loops
+        
+        while (current && depth < maxDepth) {
+            if (current.name) {
+                if (current.name.startsWith('pod-')) {
+                    const podName = current.name.replace('pod-', '');
+                    const pod = this.k8sManager.pods?.find(p => p && p.name === podName);
+                    if (pod) return pod;
+                } else if (current.name.startsWith('node-')) {
+                    const nodeName = current.name.replace('node-', '');
+                    const node = this.k8sManager.nodes?.find(n => n && n.name === nodeName);
+                    if (node) return node;
+                }
             }
             current = current.parent;
+            depth++;
         }
         return null;
     }
 
     onHoverStart(resource, object) {
+        if (!resource) return;
+        
         this.onHoverEnd(); // Clear previous hover
         
         this.hoveredObject = resource;
@@ -126,19 +150,29 @@ export class InteractionManager {
         // Add hover effect - traverse to find mesh
         const container = resource.container || resource.mesh;
         if (container) {
-            container.traverse((child) => {
-                if (child.material && child.type === 'Mesh') {
-                    // Store original values
-                    if (!child.material.userData.originalEmissive) {
-                        child.material.userData.originalEmissive = child.material.emissiveIntensity;
+            try {
+                container.traverse((child) => {
+                    if (child && child.material && child.type === 'Mesh') {
+                        // Store original values
+                        if (!child.material.userData) {
+                            child.material.userData = {};
+                        }
+                        if (!child.material.userData.originalEmissive) {
+                            child.material.userData.originalEmissive = child.material.emissiveIntensity || 0.2;
+                        }
+                        child.material.emissiveIntensity = 0.5;
+                        if (child.scale) {
+                            if (!child.userData) {
+                                child.userData = {};
+                            }
+                            child.userData.originalScale = child.scale.clone();
+                            child.scale.multiplyScalar(1.1);
+                        }
                     }
-                    child.material.emissiveIntensity = 0.5;
-                    if (child.scale) {
-                        child.userData.originalScale = child.scale.clone();
-                        child.scale.multiplyScalar(1.1);
-                    }
-                }
-            });
+                });
+            } catch (e) {
+                console.warn('Error applying hover effect:', e);
+            }
         }
     }
 
@@ -147,14 +181,18 @@ export class InteractionManager {
             // Remove hover effect
             const container = this.hoveredObject.container || this.hoveredObject.mesh;
             if (container) {
-                container.traverse((child) => {
-                    if (child.material && child.type === 'Mesh') {
-                        child.material.emissiveIntensity = child.material.userData.originalEmissive || 0.2;
-                        if (child.scale && child.userData.originalScale) {
-                            child.scale.copy(child.userData.originalScale);
+                try {
+                    container.traverse((child) => {
+                        if (child && child.material && child.type === 'Mesh') {
+                            child.material.emissiveIntensity = child.material.userData?.originalEmissive || 0.2;
+                            if (child.scale && child.userData?.originalScale) {
+                                child.scale.copy(child.userData.originalScale);
+                            }
                         }
-                    }
-                });
+                    });
+                } catch (e) {
+                    console.warn('Error removing hover effect:', e);
+                }
             }
             this.hoveredObject = null;
         }

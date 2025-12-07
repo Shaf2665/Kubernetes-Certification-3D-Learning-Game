@@ -63,9 +63,21 @@ export class VisualEffects {
     }
 
     update(delta) {
+        if (!this.scene) return;
+        
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const particle = this.particles[i];
+            if (!particle || !particle.userData || !particle.userData.velocities) {
+                this.particles.splice(i, 1);
+                continue;
+            }
+            
             const velocities = particle.userData.velocities;
+            if (!particle.geometry || !particle.geometry.attributes || !particle.geometry.attributes.position) {
+                this.particles.splice(i, 1);
+                continue;
+            }
+            
             const positions = particle.geometry.attributes.position.array;
             
             particle.userData.lifetime -= delta;
@@ -79,20 +91,28 @@ export class VisualEffects {
             }
             
             // Update positions
-            for (let j = 0; j < positions.length; j += 3) {
-                positions[j] += velocities[j] * delta * 2;
-                positions[j + 1] += velocities[j + 1] * delta * 2;
-                positions[j + 2] += velocities[j + 2] * delta * 2;
-                
-                // Gravity
-                velocities[j + 1] -= 9.8 * delta;
+            if (positions && velocities && positions.length === velocities.length) {
+                for (let j = 0; j < positions.length; j += 3) {
+                    if (j + 2 < positions.length && j + 2 < velocities.length) {
+                        positions[j] += velocities[j] * delta * 2;
+                        positions[j + 1] += velocities[j + 1] * delta * 2;
+                        positions[j + 2] += velocities[j + 2] * delta * 2;
+                        
+                        // Gravity
+                        velocities[j + 1] -= 9.8 * delta;
+                    }
+                }
             }
             
-            particle.geometry.attributes.position.needsUpdate = true;
+            if (particle.geometry && particle.geometry.attributes && particle.geometry.attributes.position) {
+                particle.geometry.attributes.position.needsUpdate = true;
+            }
             
             // Fade out
-            const opacity = particle.userData.lifetime / particle.userData.maxLifetime;
-            particle.material.opacity = opacity;
+            if (particle.material && particle.userData.maxLifetime) {
+                const opacity = particle.userData.lifetime / particle.userData.maxLifetime;
+                particle.material.opacity = Math.max(0, Math.min(1, opacity));
+            }
         }
     }
 

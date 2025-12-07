@@ -75,6 +75,12 @@ export class CommandTerminal {
 
         // Execute command
         const result = this.k8sManager.executeCommand(trimmedCommand);
+        
+        if (!result) {
+            this.log('Error: Command execution failed', 'error');
+            this.showErrorFeedback();
+            return;
+        }
 
         if (result.success) {
             this.log(result.message, 'success');
@@ -93,10 +99,16 @@ export class CommandTerminal {
             if (result.data) {
                 if (Array.isArray(result.data)) {
                     result.data.forEach(item => {
-                        const itemStr = Object.entries(item)
-                            .map(([key, value]) => `${key}: ${value}`)
-                            .join(', ');
-                        this.log(`  ${itemStr}`, 'data');
+                        if (item && typeof item === 'object') {
+                            try {
+                                const itemStr = Object.entries(item)
+                                    .map(([key, value]) => `${key}: ${value}`)
+                                    .join(', ');
+                                this.log(`  ${itemStr}`, 'data');
+                            } catch (e) {
+                                console.warn('Error formatting data item:', e);
+                            }
+                        }
                     });
                 }
             }
@@ -110,6 +122,8 @@ export class CommandTerminal {
 
     log(message, type = 'info') {
         const terminalOutput = document.getElementById('terminal-output');
+        if (!terminalOutput) return;
+        
         const line = document.createElement('div');
         line.className = `terminal-line terminal-${type}`;
         line.textContent = message;
@@ -119,6 +133,8 @@ export class CommandTerminal {
 
     clear() {
         const terminalOutput = document.getElementById('terminal-output');
+        if (!terminalOutput) return;
+        
         terminalOutput.innerHTML = '';
         this.printWelcome();
     }

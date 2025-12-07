@@ -88,9 +88,13 @@ export class MainMenu {
         const level = this.gameSystem.getLevel();
         const badges = this.achievementSystem.getUnlockedAchievements().length;
 
-        document.getElementById('player-level').textContent = level;
-        document.getElementById('player-xp').textContent = xp.toLocaleString();
-        document.getElementById('player-badges').textContent = badges;
+        const levelEl = document.getElementById('player-level');
+        const xpEl = document.getElementById('player-xp');
+        const badgesEl = document.getElementById('player-badges');
+        
+        if (levelEl) levelEl.textContent = level;
+        if (xpEl) xpEl.textContent = xp.toLocaleString();
+        if (badgesEl) badgesEl.textContent = badges;
     }
 
     updateCertificationCards() {
