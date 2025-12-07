@@ -5,10 +5,11 @@ import { Tutorial } from './Tutorial.js';
  * UI controller for challenges
  */
 export class ChallengeUI {
-    constructor(gameSystem, certificationManager, k8sManager) {
+    constructor(gameSystem, certificationManager, k8sManager, achievementSystem = null) {
         this.gameSystem = gameSystem;
         this.certificationManager = certificationManager;
         this.k8sManager = k8sManager;
+        this.achievementSystem = achievementSystem;
         this.currentChallenge = null;
         this.currentModule = null;
         this.tutorial = new Tutorial();
@@ -84,14 +85,20 @@ export class ChallengeUI {
         this.updateChallengeDisplay();
         
         // Show terminal
-        document.getElementById('terminal-panel').classList.remove('hidden');
+        const terminalPanel = document.getElementById('terminal-panel');
+        if (terminalPanel) {
+            terminalPanel.classList.remove('hidden');
+        }
     }
 
     updateChallengeDisplay() {
         if (!this.currentChallenge) return;
         
-        document.getElementById('challenge-title').textContent = this.currentChallenge.title;
-        document.getElementById('challenge-description').textContent = this.currentChallenge.description;
+        const titleEl = document.getElementById('challenge-title');
+        const descEl = document.getElementById('challenge-description');
+        
+        if (titleEl) titleEl.textContent = this.currentChallenge.title;
+        if (descEl) descEl.textContent = this.currentChallenge.description;
         
         // Update HUD
         this.updateHUD();
@@ -102,9 +109,13 @@ export class ChallengeUI {
         const level = this.gameSystem.getLevel();
         const score = this.currentChallenge ? this.currentChallenge.score : 0;
         
-        document.getElementById('hud-xp').textContent = `XP: ${xp.toLocaleString()}`;
-        document.getElementById('hud-level').textContent = `Level: ${level}`;
-        document.getElementById('hud-score').textContent = `Score: ${score}`;
+        const hudXP = document.getElementById('hud-xp');
+        const hudLevel = document.getElementById('hud-level');
+        const hudScore = document.getElementById('hud-score');
+        
+        if (hudXP) hudXP.textContent = `XP: ${xp.toLocaleString()}`;
+        if (hudLevel) hudLevel.textContent = `Level: ${level}`;
+        if (hudScore) hudScore.textContent = `Score: ${score}`;
     }
 
     checkChallengeCompletion(command) {
@@ -123,15 +134,19 @@ export class ChallengeUI {
     }
 
     showCompletionModal() {
-        if (!this.currentChallenge) return;
+        if (!this.currentChallenge || !this.currentChallenge.completed) return;
         
         const stats = this.currentChallenge.getStats();
         const xpEarned = stats.xpEarned;
         const stars = stats.stars;
         
         // Update modal content
-        document.getElementById('completion-score').textContent = stats.score;
-        document.getElementById('completion-xp').textContent = `+${xpEarned}`;
+        const completionScore = document.getElementById('completion-score');
+        const completionXP = document.getElementById('completion-xp');
+        const completionModal = document.getElementById('challenge-complete-modal');
+        
+        if (completionScore) completionScore.textContent = stats.score;
+        if (completionXP) completionXP.textContent = `+${xpEarned}`;
         
         // Show stars
         const starsElement = document.getElementById('completion-stars');
@@ -140,13 +155,17 @@ export class ChallengeUI {
         }
         
         // Show modal
-        document.getElementById('challenge-complete-modal').classList.remove('hidden');
+        if (completionModal) {
+            completionModal.classList.remove('hidden');
+        }
         
         // Show XP popup
         this.showXPPopup(xpEarned);
         
         // Check for achievements
-        this.gameSystem.achievementSystem?.checkAchievements();
+        if (this.achievementSystem) {
+            this.achievementSystem.checkAchievements();
+        }
     }
 
     showXPPopup(xpAmount) {
@@ -162,7 +181,10 @@ export class ChallengeUI {
 
     nextChallenge() {
         // Hide completion modal
-        document.getElementById('challenge-complete-modal').classList.add('hidden');
+        const completionModal = document.getElementById('challenge-complete-modal');
+        if (completionModal) {
+            completionModal.classList.add('hidden');
+        }
         
         if (!this.currentModule) return;
         
@@ -180,6 +202,11 @@ export class ChallengeUI {
 
     completeModule() {
         if (!this.currentModule || !this.currentCertificationId) return;
+        
+        // Ensure challenge is completed before getting stats
+        if (!this.currentChallenge || !this.currentChallenge.completed) {
+            return;
+        }
         
         const stats = this.currentChallenge.getStats();
         const xpEarned = this.currentModule.xpReward || 500;
@@ -201,7 +228,10 @@ export class ChallengeUI {
 
     backToModules() {
         // Hide completion modal
-        document.getElementById('challenge-complete-modal').classList.add('hidden');
+        const completionModal = document.getElementById('challenge-complete-modal');
+        if (completionModal) {
+            completionModal.classList.add('hidden');
+        }
         
         // Show module menu
         const event = new CustomEvent('show-screen', {

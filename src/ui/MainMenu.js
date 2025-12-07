@@ -22,30 +22,45 @@ export class MainMenu {
 
     setupEventListeners() {
         // Certification buttons
-        document.getElementById('btn-fundamentals').addEventListener('click', () => {
-            this.selectCertification('fundamentals');
-        });
+        const btnFundamentals = document.getElementById('btn-fundamentals');
+        if (btnFundamentals) {
+            btnFundamentals.addEventListener('click', () => {
+                this.selectCertification('fundamentals');
+            });
+        }
 
-        document.getElementById('btn-cka').addEventListener('click', () => {
-            if (this.certificationManager.isUnlocked('cka')) {
-                this.selectCertification('cka');
-            }
-        });
+        const btnCKA = document.getElementById('btn-cka');
+        if (btnCKA) {
+            btnCKA.addEventListener('click', () => {
+                if (this.certificationManager.isUnlocked('cka')) {
+                    this.selectCertification('cka');
+                }
+            });
+        }
 
-        document.getElementById('btn-ckad').addEventListener('click', () => {
-            if (this.certificationManager.isUnlocked('ckad')) {
-                this.selectCertification('ckad');
-            }
-        });
+        const btnCKAD = document.getElementById('btn-ckad');
+        if (btnCKAD) {
+            btnCKAD.addEventListener('click', () => {
+                if (this.certificationManager.isUnlocked('ckad')) {
+                    this.selectCertification('ckad');
+                }
+            });
+        }
 
         // Footer buttons
-        document.getElementById('btn-profile').addEventListener('click', () => {
-            this.showProfile();
-        });
+        const btnProfile = document.getElementById('btn-profile');
+        if (btnProfile) {
+            btnProfile.addEventListener('click', () => {
+                this.showProfile();
+            });
+        }
 
-        document.getElementById('btn-leaderboard').addEventListener('click', () => {
-            this.showLeaderboard();
-        });
+        const btnLeaderboard = document.getElementById('btn-leaderboard');
+        if (btnLeaderboard) {
+            btnLeaderboard.addEventListener('click', () => {
+                this.showLeaderboard();
+            });
+        }
 
         // Listen for XP and level updates
         this.gameSystem.on('xp-gained', (data) => {
@@ -87,20 +102,26 @@ export class MainMenu {
             const cert = this.certificationManager.getCertification(certId);
             
             const card = document.querySelector(`[data-cert="${certId}"]`);
+            if (!card) return; // Skip if card doesn't exist
+            
             const button = document.getElementById(`btn-${certId}`);
             const progressBar = document.getElementById(`${certId}-progress`);
             const progressText = card.querySelector('.progress-text');
             
             if (isUnlocked) {
                 card.classList.remove('locked');
-                button.disabled = false;
-                button.classList.remove('disabled');
-                button.textContent = 'Start Learning';
+                if (button) {
+                    button.disabled = false;
+                    button.classList.remove('disabled');
+                    button.textContent = 'Start Learning';
+                }
             } else {
                 card.classList.add('locked');
-                button.disabled = true;
-                button.classList.add('disabled');
-                button.textContent = 'Locked';
+                if (button) {
+                    button.disabled = true;
+                    button.classList.add('disabled');
+                    button.textContent = 'Locked';
+                }
             }
             
             if (progressBar) {

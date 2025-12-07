@@ -62,7 +62,8 @@ class KubernetesGame {
             this.challengeUI = new ChallengeUI(
                 this.gameSystem,
                 this.certificationManager,
-                this.terminal.getKubernetesManager()
+                this.terminal.getKubernetesManager(),
+                this.achievementSystem
             );
             
             // Connect terminal to challenge validation
@@ -125,10 +126,10 @@ class KubernetesGame {
 
     setupGlobalListeners() {
         // Listen for certification selection
+        // Note: Module menu handles certification-selected event
         document.addEventListener('certification-selected', (e) => {
             const { certificationId } = e.detail;
-            // TODO: Show module menu for selected certification
-            console.log('Selected certification:', certificationId);
+            // ModuleMenu will handle showing the module menu
         });
 
         // Update streak on page load

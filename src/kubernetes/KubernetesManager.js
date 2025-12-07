@@ -186,7 +186,14 @@ export class KubernetesManager {
 
     handleScale(resource, name, replicas) {
         if (resource === 'deployment') {
-            return this.scaleDeployment(name, parseInt(replicas));
+            if (!replicas) {
+                return { success: false, message: 'Error: Replicas value required' };
+            }
+            const replicasNum = parseInt(replicas);
+            if (isNaN(replicasNum) || replicasNum < 0) {
+                return { success: false, message: 'Error: Invalid replicas value' };
+            }
+            return this.scaleDeployment(name, replicasNum);
         } else {
             return { success: false, message: `Cannot scale resource: ${resource}` };
         }

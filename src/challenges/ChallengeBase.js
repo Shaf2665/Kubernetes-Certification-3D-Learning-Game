@@ -23,6 +23,7 @@ export class ChallengeBase {
         this.stars = 0;
         this.attempts = 0;
         this.hintsUsed = 0;
+        this.xpEarned = undefined; // Store XP earned when completed
     }
 
     start() {
@@ -60,21 +61,51 @@ export class ChallengeBase {
         }
 
         // Check if the executed command matches expected command
-        // This is a simplified check - in production, you'd want more sophisticated validation
+        // Improved validation: check command structure more carefully
+        if (!result.success) {
+            return false;
+        }
+
         const userCommand = result.message || '';
-        const expectedParts = this.command.toLowerCase().split(/\s+/);
-        const userParts = userCommand.toLowerCase().split(/\s+/);
+        const expectedCommand = this.command.toLowerCase();
         
-        // Check if key parts match (resource type and name)
-        let matches = 0;
-        expectedParts.forEach(part => {
-            if (userParts.includes(part)) {
-                matches++;
+        // Extract key parts from expected command (action, resource, name)
+        const expectedParts = expectedCommand.split(/\s+/).filter(p => p && p !== 'kubectl');
+        const userParts = userCommand.toLowerCase().split(/\s+/).filter(p => p && p !== 'kubectl');
+        
+        // Must have at least the action and resource type
+        if (expectedParts.length < 2 || userParts.length < 2) {
+            return false;
+        }
+        
+        // Check if action matches (create, get, delete, etc.)
+        if (expectedParts[0] !== userParts[0]) {
+            return false;
+        }
+        
+        // Check if resource type matches (pod, deployment, service, etc.)
+        const expectedResource = expectedParts[1];
+        const userResource = userParts[1];
+        
+        // Handle plural/singular forms (pods vs pod)
+        const resourceMatch = expectedResource === userResource || 
+                             expectedResource + 's' === userResource ||
+                             expectedResource === userResource + 's';
+        
+        if (!resourceMatch) {
+            return false;
+        }
+        
+        // If there's a name in expected command, check if it appears in user command
+        if (expectedParts.length >= 3) {
+            const expectedName = expectedParts[2];
+            // Name should appear somewhere in user command
+            if (!userCommand.toLowerCase().includes(expectedName)) {
+                return false;
             }
-        });
+        }
         
-        // If most key parts match and command was successful
-        return result.success && matches >= Math.min(2, expectedParts.length - 1);
+        return true;
     }
 
     complete() {
@@ -85,10 +116,11 @@ export class ChallengeBase {
         
         // Calculate score and stars
         this.calculateScore();
+        this.calculateStars(); // Calculate stars before storing
         
         // Award XP
-        const xpEarned = this.calculateXP();
-        this.gameSystem.addXP(xpEarned, 'challenge');
+        this.xpEarned = this.calculateXP(); // Store XP earned
+        this.gameSystem.addXP(this.xpEarned, 'challenge');
         
         // Record completion
         this.gameSystem.completeChallenge(this.id, this.score, this.getTime(), this.stars);
@@ -193,16 +225,20 @@ export class ChallengeBase {
     }
 
     getStats() {
+        // Use cached values if available, otherwise calculate
+        const stars = this.completed ? this.stars : this.calculateStars();
+        const xpEarned = this.xpEarned !== undefined ? this.xpEarned : this.calculateXP();
+        
         return {
             id: this.id,
             title: this.title,
             completed: this.completed,
             score: this.score,
-            stars: this.calculateStars(),
+            stars: stars,
             time: this.getTime(),
             attempts: this.attempts,
             hintsUsed: this.hintsUsed,
-            xpEarned: this.calculateXP()
+            xpEarned: xpEarned
         };
     }
 }

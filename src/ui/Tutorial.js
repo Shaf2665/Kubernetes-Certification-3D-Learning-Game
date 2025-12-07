@@ -81,6 +81,7 @@ export class Tutorial {
         const content = document.getElementById('tutorial-content');
         
         if (content) {
+            // Remove old event listeners by using event delegation or clearing innerHTML first
             content.innerHTML = `
                 <h3>${step.title}</h3>
                 <div class="tutorial-step-content">${step.content}</div>
@@ -97,21 +98,32 @@ export class Tutorial {
                 </div>
             `;
 
-            // Setup navigation buttons
-            document.getElementById('tutorial-prev')?.addEventListener('click', () => {
-                this.previousStep();
-            });
+            // Setup navigation buttons with event delegation to prevent memory leaks
+            const prevBtn = document.getElementById('tutorial-prev');
+            const nextBtn = document.getElementById('tutorial-next');
+            
+            if (prevBtn) {
+                // Remove old listener if exists, then add new one
+                prevBtn.replaceWith(prevBtn.cloneNode(true));
+                document.getElementById('tutorial-prev')?.addEventListener('click', () => {
+                    this.previousStep();
+                });
+            }
 
-            document.getElementById('tutorial-next')?.addEventListener('click', () => {
-                if (stepIndex === this.steps.length - 1) {
-                    this.hide();
-                    // Emit tutorial complete event
-                    const event = new CustomEvent('tutorial-complete');
-                    document.dispatchEvent(event);
-                } else {
-                    this.nextStep();
-                }
-            });
+            if (nextBtn) {
+                // Remove old listener if exists, then add new one
+                nextBtn.replaceWith(nextBtn.cloneNode(true));
+                document.getElementById('tutorial-next')?.addEventListener('click', () => {
+                    if (stepIndex === this.steps.length - 1) {
+                        this.hide();
+                        // Emit tutorial complete event
+                        const event = new CustomEvent('tutorial-complete');
+                        document.dispatchEvent(event);
+                    } else {
+                        this.nextStep();
+                    }
+                });
+            }
         }
     }
 

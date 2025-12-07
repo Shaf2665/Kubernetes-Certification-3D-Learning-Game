@@ -20,7 +20,7 @@ export class CommandTerminal {
 
     setupEventListeners() {
         const terminalInput = document.getElementById('terminal-input');
-        const terminalOutput = document.getElementById('terminal-output');
+        if (!terminalInput) return;
 
         terminalInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
