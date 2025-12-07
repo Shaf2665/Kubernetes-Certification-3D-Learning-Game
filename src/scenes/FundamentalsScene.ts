@@ -276,6 +276,131 @@ export class FundamentalsScene {
         }
 
         (scene as any).hud = hud;
+
+        // Setup collapsible sections with proper event listeners
+        this.setupCollapsibleSections();
+        
+        // Store reference for later use
+        (window as any).FundamentalsScene = FundamentalsScene;
+    }
+
+    private static setupCollapsibleSections(): void {
+        // Add global toggle function for collapsible sections
+        (window as any).toggleSection = (sectionId: string) => {
+            console.log('[FundamentalsScene] Section toggled:', sectionId);
+            const section = document.querySelector(`[data-section="${sectionId}"]`);
+            if (!section) {
+                console.warn('[FundamentalsScene] Section not found:', sectionId);
+                return;
+            }
+
+            const content = section.querySelector('.section-content') as HTMLElement;
+            const arrow = section.querySelector('.section-arrow') as HTMLElement;
+            
+            if (!content || !arrow) {
+                console.warn('[FundamentalsScene] Section content or arrow not found');
+                return;
+            }
+
+            // Check if expanded by checking computed style or data attribute
+            const isExpanded = content.style.maxHeight && content.style.maxHeight !== '0px' && content.style.maxHeight !== '';
+            
+            if (isExpanded) {
+                // Collapse
+                content.style.maxHeight = '0px';
+                content.style.paddingTop = '0';
+                content.style.paddingBottom = '0';
+                arrow.textContent = '▶';
+                section.setAttribute('data-expanded', 'false');
+            } else {
+                // Expand - use scrollHeight for dynamic height
+                const scrollHeight = content.scrollHeight;
+                content.style.maxHeight = `${scrollHeight + 50}px`;
+                content.style.paddingTop = '8px';
+                content.style.paddingBottom = '12px';
+                arrow.textContent = '▼';
+                section.setAttribute('data-expanded', 'true');
+            }
+
+            // Force reflow
+            const missionInfo = document.getElementById('mission-info');
+            if (missionInfo) {
+                missionInfo.scrollTop = missionInfo.scrollTop;
+            }
+        };
+
+        // Add toggle all function
+        (window as any).toggleAllSections = (expand: boolean) => {
+            console.log('[FundamentalsScene] Toggling all sections:', expand ? 'expand' : 'collapse');
+            const sections = document.querySelectorAll('.collapsible-section');
+            
+            sections.forEach(section => {
+                const content = section.querySelector('.section-content') as HTMLElement;
+                const arrow = section.querySelector('.section-arrow') as HTMLElement;
+                
+                if (!content || !arrow) return;
+
+                if (expand) {
+                    const scrollHeight = content.scrollHeight;
+                    content.style.maxHeight = `${scrollHeight + 50}px`;
+                    content.style.paddingTop = '8px';
+                    content.style.paddingBottom = '12px';
+                    arrow.textContent = '▼';
+                    section.setAttribute('data-expanded', 'true');
+                } else {
+                    content.style.maxHeight = '0px';
+                    content.style.paddingTop = '0';
+                    content.style.paddingBottom = '0';
+                    arrow.textContent = '▶';
+                    section.setAttribute('data-expanded', 'false');
+                    allExpanded = false;
+                }
+            });
+
+            const toggleBtn = document.getElementById('btn-toggle-all');
+            if (toggleBtn) {
+                toggleBtn.textContent = expand ? 'Collapse All' : 'Expand All';
+            }
+        };
+
+        // Setup toggle all button with proper event listener
+        const toggleAllBtn = document.getElementById('btn-toggle-all');
+        if (toggleAllBtn) {
+            // Remove old listeners by cloning
+            const newBtn = toggleAllBtn.cloneNode(true) as HTMLElement;
+            toggleAllBtn.parentNode?.replaceChild(newBtn, toggleAllBtn);
+            
+            let allExpanded = false;
+            newBtn.addEventListener('click', () => {
+                allExpanded = !allExpanded;
+                (window as any).toggleAllSections(allExpanded);
+            });
+        }
+
+        // Ensure section headers have pointer-events enabled and attach click listeners
+        const sectionHeaders = document.querySelectorAll('.section-header');
+        sectionHeaders.forEach(header => {
+            const headerEl = header as HTMLElement;
+            headerEl.style.pointerEvents = 'auto';
+            headerEl.style.cursor = 'pointer';
+            
+            // Get section ID from data attribute
+            const sectionId = headerEl.getAttribute('data-section-id');
+            if (sectionId) {
+                // Remove old listeners by cloning
+                const newHeader = headerEl.cloneNode(true) as HTMLElement;
+                headerEl.parentNode?.replaceChild(newHeader, headerEl);
+                
+                // Attach click listener
+                newHeader.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('[FundamentalsScene] Section header clicked:', sectionId);
+                    if ((window as any).toggleSection) {
+                        (window as any).toggleSection(sectionId);
+                    }
+                });
+            }
+        });
     }
 
     public static getClusterSimulator(): ClusterSimulator | null {
