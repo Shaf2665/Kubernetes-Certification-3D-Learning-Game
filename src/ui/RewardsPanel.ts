@@ -93,10 +93,17 @@ export class RewardsPanel {
                     </div>
                 </div>
 
-                <div>
+                <div style="margin-bottom: 20px;">
                     <h3 style="color: #4a90e2; margin: 0 0 15px 0; font-size: 20px;">Features</h3>
                     <div id="features-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
                         ${this.renderRewards(allRewards.filter(r => r.type === 'feature'), unlockedRewards)}
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: #ffc107; margin: 0 0 15px 0; font-size: 20px;">⚡ Challenge Badges</h3>
+                    <div id="challenge-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                        ${this.renderChallengeBadges()}
                     </div>
                 </div>
             </div>
@@ -112,6 +119,10 @@ export class RewardsPanel {
             @keyframes cardReveal {
                 from { opacity: 0; transform: translateY(20px); }
                 to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes challengeGlow {
+                0%, 100% { box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); }
+                50% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8); }
             }
         `;
         if (!document.head.querySelector('#rewards-animations')) {
@@ -178,6 +189,51 @@ export class RewardsPanel {
             case 'cosmetic': return '✨';
             case 'feature': return '🚀';
             default: return '⭐';
+        }
+    }
+
+    private renderChallengeBadges(): string {
+        try {
+            const completed = localStorage.getItem('challengeCompleted');
+            const completedChallenges = completed ? JSON.parse(completed) : [];
+            
+            const challengeBadges = [
+                { id: 'speed_pod_creation', name: 'Speed Master', description: 'Completed Speed Pod Creation challenge' },
+                { id: 'scale_sprint', name: 'Scaling Champion', description: 'Completed Scaling Sprint challenge' },
+                { id: 'crash_recovery_rush', name: 'Recovery Expert', description: 'Completed Crash Recovery Rush challenge' },
+                { id: 'service_exposure_relay', name: 'Network Warrior', description: 'Completed Service Exposure Relay challenge' },
+                { id: 'challenge_master', name: 'Challenge Master', description: 'Completed your first challenge' }
+            ];
+
+            return challengeBadges.map(badge => {
+                const isUnlocked = completedChallenges.includes(badge.id) || 
+                                 (badge.id === 'challenge_master' && completedChallenges.length > 0);
+                
+                return `
+                    <div class="reward-card" style="
+                        background: ${isUnlocked ? 'rgba(255, 193, 7, 0.2)' : 'rgba(50, 50, 50, 0.5)'};
+                        border: 2px solid ${isUnlocked ? '#ffc107' : '#666'};
+                        border-radius: 8px;
+                        padding: 15px;
+                        text-align: center;
+                        opacity: ${isUnlocked ? '1' : '0.5'};
+                        ${isUnlocked ? 'animation: challengeGlow 2s infinite;' : ''}
+                    ">
+                        <div style="font-size: 40px; margin-bottom: 10px;">
+                            ${isUnlocked ? '⚡' : '🔒'}
+                        </div>
+                        <h4 style="color: ${isUnlocked ? '#ffc107' : '#888'}; margin: 0 0 5px 0; font-size: 16px;">
+                            ${badge.name}
+                        </h4>
+                        <p style="color: #aaa; margin: 0; font-size: 12px; line-height: 1.4;">
+                            ${badge.description}
+                        </p>
+                        ${isUnlocked ? '<div style="color: #ffc107; margin-top: 8px; font-size: 12px;">✓ Unlocked</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            return '<p style="color: #aaa;">No challenge badges yet.</p>';
         }
     }
 

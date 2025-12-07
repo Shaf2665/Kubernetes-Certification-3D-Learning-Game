@@ -1,4 +1,5 @@
 import { Engine, Scene, FreeCamera, Vector3, HemisphericLight, MeshBuilder, StandardMaterial, Color3 } from '@babylonjs/core';
+import { ProgressionSystem } from '../gameplay/ProgressionSystem.js';
 
 /**
  * Main menu scene with navigation options
@@ -80,10 +81,43 @@ export class MainMenuScene {
                     cursor: pointer;
                     transition: all 0.3s;
                 ">Open Lab Environment</button>
+                <button id="btn-challenge" style="
+                    background: rgba(255, 193, 7, 0.2);
+                    color: #ffc107;
+                    border: 2px solid #ffc107;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    font-size: 18px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    display: none;
+                    position: relative;
+                    animation: challengePulse 2s infinite;
+                ">⚡ Challenge Mode</button>
             </div>
         `;
 
         document.body.appendChild(menuContainer);
+
+        // Check if Challenge Mode should be visible
+        const progressionSystem = new ProgressionSystem();
+        const challengeBtn = document.getElementById('btn-challenge');
+        if (challengeBtn && progressionSystem.getLevel() >= 5) {
+            challengeBtn.style.display = 'block';
+            
+            // Add pulse animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes challengePulse {
+                    0%, 100% { box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); }
+                    50% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8); }
+                }
+            `;
+            if (!document.head.querySelector('#challenge-pulse-animation')) {
+                style.id = 'challenge-pulse-animation';
+                document.head.appendChild(style);
+            }
+        }
 
         // Add button event listeners
         const fundamentalsBtn = document.getElementById('btn-fundamentals');
@@ -97,6 +131,11 @@ export class MainMenuScene {
         labBtn?.addEventListener('click', () => {
             menuContainer.style.display = 'none';
             document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'lab' } }));
+        });
+
+        challengeBtn?.addEventListener('click', () => {
+            menuContainer.style.display = 'none';
+            document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'challenge' } }));
         });
 
         // Store reference in scene metadata

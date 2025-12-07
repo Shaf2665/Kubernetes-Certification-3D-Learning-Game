@@ -2,8 +2,9 @@ import { Engine, Scene } from '@babylonjs/core';
 import { MainMenuScene } from '../scenes/MainMenuScene.js';
 import { FundamentalsScene } from '../scenes/FundamentalsScene.js';
 import { LabEnvironmentScene } from '../scenes/LabEnvironmentScene.js';
+import { ChallengeModeScene } from '../scenes/ChallengeModeScene.js';
 
-export type SceneType = 'main-menu' | 'fundamentals' | 'lab';
+export type SceneType = 'main-menu' | 'fundamentals' | 'lab' | 'challenge';
 
 /**
  * Manages scene transitions and lifecycle
@@ -25,7 +26,7 @@ export class SceneManager {
         // Listen for scene change events
         document.addEventListener('scene-change', async (e: any) => {
             const sceneType = e.detail?.scene;
-            if (sceneType && (sceneType === 'main-menu' || sceneType === 'fundamentals' || sceneType === 'lab')) {
+            if (sceneType && (sceneType === 'main-menu' || sceneType === 'fundamentals' || sceneType === 'lab' || sceneType === 'challenge')) {
                 await this.loadScene(sceneType);
             }
         });
@@ -65,6 +66,9 @@ export class SceneManager {
                     break;
                 case 'lab':
                     newScene = await LabEnvironmentScene.create(this.engine);
+                    break;
+                case 'challenge':
+                    newScene = await ChallengeModeScene.create(this.engine);
                     break;
                 default:
                     throw new Error(`Unknown scene type: ${sceneType}`);

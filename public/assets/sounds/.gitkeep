@@ -1,3 +1,5 @@
 # Placeholder for sound files
-# Add mission_success.mp3 here for mission completion sound effects
-
+# Add the following sound files for Challenge Mode:
+# - challenge_success.mp3 (success sound for completing challenges)
+# - fail.mp3 (failure sound for failed challenges)
+# - countdown_tick.mp3 (tick sound played every second in last 5 seconds)
