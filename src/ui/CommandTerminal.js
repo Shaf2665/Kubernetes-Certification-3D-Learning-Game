@@ -10,7 +10,12 @@ export class CommandTerminal {
         this.k8sManager = new KubernetesManager(sceneManager);
         this.commandHistory = [];
         this.historyIndex = -1;
+        this.challengeUI = null; // Will be set by main.js
         this.init();
+    }
+
+    setChallengeUI(challengeUI) {
+        this.challengeUI = challengeUI;
     }
 
     init() {
@@ -76,6 +81,13 @@ export class CommandTerminal {
             
             // Visual feedback for successful commands
             this.showSuccessFeedback();
+            
+            // Check task completion immediately after successful command
+            if (this.challengeUI) {
+                setTimeout(() => {
+                    this.challengeUI.checkTaskCompletion(trimmedCommand, result);
+                }, 50);
+            }
             
             // If there's data, display it
             if (result.data) {

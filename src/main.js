@@ -99,6 +99,11 @@ class KubernetesGame {
             
             // Connect terminal to challenge validation
             this.setupTerminalChallengeIntegration();
+            
+            // Connect challengeUI to terminal for task tracking
+            if (this.terminal) {
+                this.terminal.setChallengeUI(this.challengeUI);
+            }
         }
 
         // Setup screen navigation
@@ -150,10 +155,11 @@ class KubernetesGame {
                 if (e.key === 'Enter' && this.challengeUI) {
                     const command = terminalInput.value.trim();
                     if (command) {
-                        // Check if challenge is completed
+                        // Check task completion immediately after command execution
+                        // The terminal will execute the command first, then we check
                         setTimeout(() => {
                             this.challengeUI.checkChallengeCompletion(command);
-                        }, 100);
+                        }, 150);
                     }
                 }
             });

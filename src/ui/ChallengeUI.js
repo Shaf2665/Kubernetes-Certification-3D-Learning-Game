@@ -136,7 +136,7 @@ export class ChallengeUI {
         
         const result = this.currentChallenge.validate(command);
         
-        // Mark all tasks as complete when challenge is completed
+        // Mark all remaining tasks as complete when challenge is fully completed
         if (result.completed && this.currentChallenge.tasks) {
             this.currentChallenge.tasks.forEach((task, index) => {
                 if (!task.completed) {
@@ -153,6 +153,123 @@ export class ChallengeUI {
         }
         
         return result;
+    }
+
+    checkTaskCompletion(command, result) {
+        if (!this.currentChallenge || !this.currentChallenge.tasks || !result.success) return;
+        
+        const commandLower = command.toLowerCase();
+        let taskCompleted = false;
+        
+        // Check each task to see if it matches the executed command
+        this.currentChallenge.tasks.forEach((task, index) => {
+            if (task.completed) return; // Skip already completed tasks
+            
+            const taskText = task.text.toLowerCase();
+            
+            // Check if task matches the command
+            let taskMatches = false;
+            
+            // Check for pod creation - most common case
+            if (taskText.includes('create') && taskText.includes('pod')) {
+                if (commandLower.includes('create') && commandLower.includes('pod')) {
+                    // Extract pod name from task and command
+                    const taskPodName = this.extractPodName(taskText);
+                    const commandPodName = this.extractPodName(commandLower);
+                    
+                    // If both have names, they must match
+                    if (taskPodName && commandPodName) {
+                        if (taskPodName === commandPodName) {
+                            taskMatches = true;
+                        }
+                    } 
+                    // If task has a name but command doesn't, or vice versa, check if task name is in command
+                    else if (taskPodName && commandLower.includes(taskPodName)) {
+                        taskMatches = true;
+                    }
+                    // If no specific name in task, any pod creation matches
+                    else if (!taskPodName) {
+                        taskMatches = true;
+                    }
+                }
+            }
+            // Check for get/list commands
+            else if (taskText.includes('list') || taskText.includes('get')) {
+                if (commandLower.includes('get')) {
+                    const taskResource = this.extractResource(taskText);
+                    const commandResource = this.extractResource(commandLower);
+                    if (taskResource && commandResource && taskResource === commandResource) {
+                        taskMatches = true;
+                    } else if (!taskResource) {
+                        // If task doesn't specify resource, any get command matches
+                        taskMatches = true;
+                    }
+                }
+            }
+            // Check for delete commands
+            else if (taskText.includes('delete')) {
+                if (commandLower.includes('delete')) {
+                    const taskResource = this.extractResource(taskText);
+                    const commandResource = this.extractResource(commandLower);
+                    if (taskResource && commandResource && taskResource === commandResource) {
+                        taskMatches = true;
+                    }
+                }
+            }
+            // Generic check - if key words from task appear in command
+            else {
+                // Extract key action words from task
+                const taskWords = taskText.split(/\s+/).filter(w => 
+                    ['create', 'get', 'list', 'delete', 'pod', 'node', 'deployment', 'service'].includes(w)
+                );
+                if (taskWords.length > 0) {
+                    const allWordsMatch = taskWords.every(word => commandLower.includes(word));
+                    if (allWordsMatch) {
+                        taskMatches = true;
+                    }
+                }
+                // Fallback: check if task text (cleaned) appears in command
+                const cleanedTaskText = taskText.replace(/[^a-z0-9\s]/g, '').trim();
+                if (cleanedTaskText && commandLower.includes(cleanedTaskText)) {
+                    taskMatches = true;
+                }
+            }
+            
+            if (taskMatches) {
+                this.markTaskComplete(index);
+                taskCompleted = true;
+            }
+        });
+        
+        return taskCompleted;
+    }
+
+    extractPodName(text) {
+        // Try to extract pod name from text like "Create a pod named 'my-first-pod'"
+        // Match: "pod named 'my-first-pod'" or "pod 'my-first-pod'"
+        let match = text.match(/pod\s+(?:named\s+)?['"]?([a-z0-9-]+)['"]?/i);
+        if (match) return match[1].toLowerCase();
+        
+        // Try kubectl create pod <name> format
+        match = text.match(/create\s+pod\s+([a-z0-9-]+)/i);
+        if (match) return match[1].toLowerCase();
+        
+        // Try to find quoted name anywhere in text
+        match = text.match(/['"]([a-z0-9-]+)['"]/i);
+        if (match) return match[1].toLowerCase();
+        
+        return null;
+    }
+
+    extractResource(text) {
+        // Extract resource type (pod, node, deployment, etc.)
+        const resources = ['pod', 'pods', 'node', 'nodes', 'deployment', 'deployments', 'service', 'services'];
+        for (const resource of resources) {
+            if (text.includes(resource)) {
+                return resource.replace('s', ''); // Normalize to singular
+            }
+        }
+        return null;
     }
 
     showCompletionModal() {
@@ -372,8 +489,23 @@ export class ChallengeUI {
         if (!this.currentChallenge || !this.currentChallenge.tasks) return;
         
         if (taskIndex >= 0 && taskIndex < this.currentChallenge.tasks.length) {
-            this.currentChallenge.tasks[taskIndex].completed = true;
-            this.updateTaskPanel();
+            const task = this.currentChallenge.tasks[taskIndex];
+            if (!task.completed) {
+                task.completed = true;
+                this.updateTaskPanel();
+                
+                // Show visual feedback
+                const taskList = document.getElementById('task-list');
+                if (taskList) {
+                    const taskItem = taskList.querySelector(`[data-task-index="${taskIndex}"]`);
+                    if (taskItem) {
+                        taskItem.classList.add('task-completed-animation');
+                        setTimeout(() => {
+                            taskItem.classList.remove('task-completed-animation');
+                        }, 1000);
+                    }
+                }
+            }
         }
     }
 }
