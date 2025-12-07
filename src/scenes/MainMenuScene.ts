@@ -1,5 +1,6 @@
 import { Engine, Scene, FreeCamera, Vector3, HemisphericLight, MeshBuilder, StandardMaterial, Color3 } from '@babylonjs/core';
 import { ProgressionSystem } from '../gameplay/ProgressionSystem.js';
+import { LearningJourneyManager } from '../gameplay/LearningJourneyManager.js';
 
 /**
  * Main menu scene with navigation options
@@ -36,6 +37,12 @@ export class MainMenuScene {
             existingMenu.remove();
         }
 
+        // Check learning journey completion
+        const learningJourneyManager = new LearningJourneyManager();
+        const isJourneyComplete = learningJourneyManager.isJourneyComplete();
+        const nextModule = learningJourneyManager.getNextModule();
+        const nextModuleName = nextModule ? this.getModuleName(nextModule) : '';
+
         const menuContainer = document.createElement('div');
         menuContainer.id = 'main-menu';
         menuContainer.style.cssText = `
@@ -48,52 +55,73 @@ export class MainMenuScene {
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
-            z-index: 50;
-            pointer-events: auto;
+            background: linear-gradient(135deg, rgba(10, 10, 20, 0.95) 0%, rgba(20, 10, 30, 0.95) 100%);
+            z-index: 100;
         `;
 
+        const fundamentalsButtonStyle = isJourneyComplete 
+            ? 'background: #4a90e2; color: white; cursor: pointer;'
+            : 'background: rgba(100, 100, 100, 0.5); color: #888; cursor: not-allowed;';
+
+        const fundamentalsButtonText = isJourneyComplete 
+            ? 'Start Fundamentals'
+            : '🔒 Complete Learning Journey First';
+
         menuContainer.innerHTML = `
-            <h1 style="color: #4a90e2; font-size: 48px; margin-bottom: 10px; text-align: center;">
-                Kubernetes 3D Learning Game
-            </h1>
-            <p style="color: #aaa; font-size: 18px; margin-bottom: 40px; text-align: center;">
-                Master Kubernetes through interactive 3D missions
-            </p>
-            <div style="display: flex; flex-direction: column; gap: 15px; min-width: 300px;">
-                <button id="btn-fundamentals" style="
-                    background: #4a90e2;
-                    color: white;
-                    border: none;
-                    padding: 15px 30px;
-                    border-radius: 8px;
-                    font-size: 18px;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                ">Start Fundamentals</button>
-                <button id="btn-lab" style="
-                    background: rgba(74, 144, 226, 0.3);
-                    color: #4a90e2;
-                    border: 2px solid #4a90e2;
-                    padding: 15px 30px;
-                    border-radius: 8px;
-                    font-size: 18px;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                ">Open Lab Environment</button>
-                <button id="btn-challenge" style="
-                    background: rgba(255, 193, 7, 0.2);
-                    color: #ffc107;
-                    border: 2px solid #ffc107;
-                    padding: 15px 30px;
-                    border-radius: 8px;
-                    font-size: 18px;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                    display: none;
-                    position: relative;
-                    animation: challengePulse 2s infinite;
-                ">⚡ Challenge Mode</button>
+            <div style="text-align: center;">
+                <h1 style="color: #4a90e2; font-size: 48px; margin-bottom: 10px;">Kubernetes 3D Learning Game</h1>
+                <p style="color: #aaa; font-size: 18px; margin-bottom: 40px; text-align: center;">
+                    Master Kubernetes through interactive 3D missions
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 15px; min-width: 300px;">
+                    <button id="btn-fundamentals" style="
+                        ${fundamentalsButtonStyle}
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 8px;
+                        font-size: 18px;
+                        transition: all 0.3s;
+                        position: relative;
+                    ">${fundamentalsButtonText}</button>
+                    ${!isJourneyComplete ? `
+                    <div style="
+                        margin-top: 10px;
+                        padding: 10px;
+                        background: rgba(255, 193, 7, 0.1);
+                        border: 1px solid #ffc107;
+                        border-radius: 5px;
+                        color: #ffc107;
+                        font-size: 14px;
+                        text-align: center;
+                    ">
+                        Complete the Learning Journey to unlock Fundamentals missions
+                        ${nextModuleName ? `<br><small>Next: ${nextModuleName}</small>` : ''}
+                    </div>
+                    ` : ''}
+                    <button id="btn-lab" style="
+                        background: rgba(74, 144, 226, 0.3);
+                        color: #4a90e2;
+                        border: 2px solid #4a90e2;
+                        padding: 15px 30px;
+                        border-radius: 8px;
+                        font-size: 18px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">Open Lab Environment</button>
+                    <button id="btn-challenge" style="
+                        background: rgba(255, 193, 7, 0.2);
+                        color: #ffc107;
+                        border: 2px solid #ffc107;
+                        padding: 15px 30px;
+                        border-radius: 8px;
+                        font-size: 18px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        display: none;
+                        position: relative;
+                        animation: challengePulse 2s infinite;
+                    ">⚡ Challenge Mode</button>
+                </div>
             </div>
         `;
 
@@ -123,23 +151,58 @@ export class MainMenuScene {
         const fundamentalsBtn = document.getElementById('btn-fundamentals');
         const labBtn = document.getElementById('btn-lab');
 
-        fundamentalsBtn?.addEventListener('click', () => {
-            menuContainer.style.display = 'none';
-            document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'fundamentals' } }));
-        });
+        if (fundamentalsBtn) {
+            const newBtn = fundamentalsBtn.cloneNode(true) as HTMLElement;
+            fundamentalsBtn.parentNode?.replaceChild(newBtn, fundamentalsBtn);
+            
+            newBtn.addEventListener('click', () => {
+                menuContainer.style.display = 'none';
+                if (!isJourneyComplete) {
+                    // Start learning journey instead
+                    document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'intro' } }));
+                } else {
+                    document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'fundamentals' } }));
+                }
+            });
+        }
 
-        labBtn?.addEventListener('click', () => {
-            menuContainer.style.display = 'none';
-            document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'lab' } }));
-        });
+        if (labBtn) {
+            const newBtn = labBtn.cloneNode(true) as HTMLElement;
+            labBtn.parentNode?.replaceChild(newBtn, labBtn);
+            
+            newBtn.addEventListener('click', () => {
+                menuContainer.style.display = 'none';
+                document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'lab' } }));
+            });
+        }
 
-        challengeBtn?.addEventListener('click', () => {
-            menuContainer.style.display = 'none';
-            document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'challenge' } }));
-        });
+        if (challengeBtn) {
+            const newBtn = challengeBtn.cloneNode(true) as HTMLElement;
+            challengeBtn.parentNode?.replaceChild(newBtn, challengeBtn);
+            
+            newBtn.addEventListener('click', () => {
+                menuContainer.style.display = 'none';
+                document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'challenge' } }));
+            });
+        }
 
         // Store reference in scene metadata
         (scene as any).menuContainer = menuContainer;
     }
-}
 
+    private static getModuleName(module: string): string {
+        const names: Record<string, string> = {
+            'intro': 'Introduction',
+            'kubernetesOverview': 'Kubernetes Overview',
+            'containers': 'Containers Basics',
+            'orchestration': 'Container Orchestration',
+            'architecture': 'Kubernetes Architecture',
+            'setup': 'Kubernetes Setup',
+            'yaml': 'YAML Basics',
+            'coreConcepts': 'Core Concepts',
+            'networking': 'Networking',
+            'microservices': 'Microservices'
+        };
+        return names[module] || module;
+    }
+}

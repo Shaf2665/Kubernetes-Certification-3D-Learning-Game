@@ -3,8 +3,12 @@ import { MainMenuScene } from '../scenes/MainMenuScene.js';
 import { FundamentalsScene } from '../scenes/FundamentalsScene.js';
 import { LabEnvironmentScene } from '../scenes/LabEnvironmentScene.js';
 import { ChallengeModeScene } from '../scenes/ChallengeModeScene.js';
+import { IntroductionScene } from '../scenes/IntroductionScene.js';
+import { KubernetesOverviewScene } from '../scenes/KubernetesOverviewScene.js';
 
-export type SceneType = 'main-menu' | 'fundamentals' | 'lab' | 'challenge';
+export type SceneType = 'main-menu' | 'fundamentals' | 'lab' | 'challenge' | 
+    'intro' | 'kubernetes-overview' | 'containers' | 'orchestration' | 
+    'architecture' | 'setup' | 'yaml' | 'core-concepts' | 'networking' | 'microservices';
 
 /**
  * Manages scene transitions and lifecycle
@@ -26,8 +30,8 @@ export class SceneManager {
         // Listen for scene change events
         document.addEventListener('scene-change', async (e: any) => {
             const sceneType = e.detail?.scene;
-            if (sceneType && (sceneType === 'main-menu' || sceneType === 'fundamentals' || sceneType === 'lab' || sceneType === 'challenge')) {
-                await this.loadScene(sceneType);
+            if (sceneType) {
+                await this.loadScene(sceneType as SceneType);
             }
         });
     }
@@ -69,6 +73,34 @@ export class SceneManager {
                     break;
                 case 'challenge':
                     newScene = await ChallengeModeScene.create(this.engine);
+                    break;
+                case 'intro':
+                    newScene = await IntroductionScene.create(this.engine);
+                    break;
+                case 'kubernetes-overview':
+                    newScene = await KubernetesOverviewScene.create(this.engine);
+                    break;
+                case 'containers':
+                case 'orchestration':
+                case 'architecture':
+                case 'setup':
+                case 'yaml':
+                case 'core-concepts':
+                case 'networking':
+                case 'microservices':
+                    // These will be implemented next
+                    // For now, redirect to next module or fundamentals
+                    const { LearningJourneyManager } = await import('../gameplay/LearningJourneyManager.js');
+                    const journeyManager = new LearningJourneyManager();
+                    const nextModule = journeyManager.getNextModule();
+                    
+                    if (nextModule === null || sceneType === 'microservices') {
+                        // All modules complete, go to fundamentals
+                        newScene = await FundamentalsScene.create(this.engine);
+                    } else {
+                        // Create a placeholder scene that will be replaced with actual modules
+                        newScene = await IntroductionScene.create(this.engine);
+                    }
                     break;
                 default:
                     throw new Error(`Unknown scene type: ${sceneType}`);
