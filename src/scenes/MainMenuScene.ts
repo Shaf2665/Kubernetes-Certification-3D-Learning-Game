@@ -29,6 +29,12 @@ export class MainMenuScene {
     }
 
     private static createMenuUI(scene: Scene): void {
+        // Remove existing menu if it exists
+        const existingMenu = document.getElementById('main-menu');
+        if (existingMenu) {
+            existingMenu.remove();
+        }
+
         const menuContainer = document.createElement('div');
         menuContainer.id = 'main-menu';
         menuContainer.style.cssText = `

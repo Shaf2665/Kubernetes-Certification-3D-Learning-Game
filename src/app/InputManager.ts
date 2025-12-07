@@ -44,15 +44,22 @@ export class InputManager {
             event.preventDefault();
             const terminal = document.getElementById('terminal');
             if (terminal) {
-                const isVisible = terminal.style.display !== 'none';
+                const isVisible = terminal.style.display !== 'none' && terminal.style.display !== '';
                 terminal.style.display = isVisible ? 'none' : 'block';
+                // Focus input when showing terminal
+                if (!isVisible) {
+                    const input = terminal.querySelector('#terminal-input') as HTMLInputElement;
+                    if (input) {
+                        setTimeout(() => input.focus(), 100);
+                    }
+                }
             }
         }
 
         // ESC to close dialogs
         if (event.key === 'Escape') {
             const dialog = document.getElementById('dialog-box');
-            if (dialog && dialog.style.display !== 'none') {
+            if (dialog && dialog.style.display !== 'none' && dialog.style.display !== '') {
                 dialog.style.display = 'none';
             }
         }

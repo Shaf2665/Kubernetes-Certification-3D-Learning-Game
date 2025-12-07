@@ -22,8 +22,12 @@ export class TerminalUI {
 
     private createTerminal(): void {
         const terminal = document.getElementById('terminal');
-        if (!terminal) return;
+        if (!terminal) {
+            console.warn('[TerminalUI] Terminal element not found. Make sure UIManager creates it first.');
+            return;
+        }
 
+        // Clear any existing content and event listeners
         terminal.innerHTML = `
             <div style="display: flex; flex-direction: column; height: 100%;">
                 <div style="background: #1a1a2e; padding: 10px; border-bottom: 1px solid #4a90e2; display: flex; justify-content: space-between; align-items: center;">
@@ -72,9 +76,13 @@ export class TerminalUI {
         this.outputElement = document.getElementById('terminal-output');
 
         const closeBtn = document.getElementById('terminal-close');
-        closeBtn?.addEventListener('click', () => {
-            if (terminal) terminal.style.display = 'none';
-        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (this.terminalElement) {
+                    this.terminalElement.style.display = 'none';
+                }
+            });
+        }
 
         this.addOutput('Kubernetes Cluster Simulator Terminal');
         this.addOutput('Type kubectl commands to interact with the cluster.');

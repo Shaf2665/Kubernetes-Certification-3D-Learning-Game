@@ -84,6 +84,12 @@ export class FundamentalsScene {
     }
 
     private static createHUD(scene: Scene): void {
+        // Remove existing HUD if it exists
+        const existingHud = document.getElementById('fundamentals-hud');
+        if (existingHud) {
+            existingHud.remove();
+        }
+
         const hud = document.createElement('div');
         hud.id = 'fundamentals-hud';
         hud.style.cssText = `
@@ -119,10 +125,16 @@ export class FundamentalsScene {
         document.body.appendChild(hud);
 
         const backBtn = document.getElementById('btn-back-menu');
-        backBtn?.addEventListener('click', () => {
-            hud.style.display = 'none';
-            document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'main-menu' } }));
-        });
+        if (backBtn) {
+            // Remove old listeners by cloning
+            const newBtn = backBtn.cloneNode(true) as HTMLElement;
+            backBtn.parentNode?.replaceChild(newBtn, backBtn);
+            
+            newBtn.addEventListener('click', () => {
+                hud.style.display = 'none';
+                document.dispatchEvent(new CustomEvent('scene-change', { detail: { scene: 'main-menu' } }));
+            });
+        }
 
         (scene as any).hud = hud;
     }

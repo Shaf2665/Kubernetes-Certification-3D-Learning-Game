@@ -26,6 +26,9 @@ export class HUD {
     showObjective(objective: string): void {
         if (!this.container) return;
 
+        // Remove existing objective if it exists
+        this.hideObjective();
+
         const objectiveEl = document.createElement('div');
         objectiveEl.id = 'objective-display';
         objectiveEl.style.cssText = `

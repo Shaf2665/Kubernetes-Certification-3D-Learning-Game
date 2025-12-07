@@ -47,15 +47,31 @@ export class Game {
             this.engine.resize();
         });
 
-        // Handle scene changes - show/hide menu
+        // Handle scene changes - show/hide menu and cleanup HUDs
         document.addEventListener('scene-change', (e: any) => {
             const sceneType = e.detail?.scene;
             const menuContainer = document.getElementById('main-menu');
-            if (menuContainer) {
-                if (sceneType === 'main-menu') {
+            
+            if (sceneType === 'main-menu') {
+                if (menuContainer) {
                     menuContainer.style.display = 'flex';
-                } else {
+                }
+                // Hide other HUDs
+                const fundamentalsHud = document.getElementById('fundamentals-hud');
+                const labHud = document.getElementById('lab-hud');
+                if (fundamentalsHud) fundamentalsHud.style.display = 'none';
+                if (labHud) labHud.style.display = 'none';
+            } else {
+                if (menuContainer) {
                     menuContainer.style.display = 'none';
+                }
+                // Hide HUDs from other scenes
+                if (sceneType === 'fundamentals') {
+                    const labHud = document.getElementById('lab-hud');
+                    if (labHud) labHud.style.display = 'none';
+                } else if (sceneType === 'lab') {
+                    const fundamentalsHud = document.getElementById('fundamentals-hud');
+                    if (fundamentalsHud) fundamentalsHud.style.display = 'none';
                 }
             }
         });

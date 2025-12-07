@@ -11,6 +11,12 @@ export class DialogBox {
     show(title: string, message: string, onClose?: () => void): void {
         if (!this.container) return;
 
+        // Remove old event listeners by cloning the element
+        const oldContainer = this.container;
+        const newContainer = oldContainer.cloneNode(false) as HTMLElement;
+        oldContainer.parentNode?.replaceChild(newContainer, oldContainer);
+        this.container = newContainer;
+
         this.container.innerHTML = `
             <h2 style="color: #4a90e2; margin-bottom: 15px;">${title}</h2>
             <p style="margin-bottom: 20px; line-height: 1.6;">${message}</p>
