@@ -1,0 +1,376 @@
+/* Gamification Styles */
+
+/* XP Popup Animation */
+.xp-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 3px solid var(--success-color);
+    border-radius: 15px;
+    padding: 30px 50px;
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--success-color);
+    z-index: 1000;
+    animation: xpPopup 2s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes xpPopup {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -70%) scale(0.8);
+    }
+}
+
+/* Level Up Animation */
+.level-up-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.level-up-content {
+    text-align: center;
+    animation: levelUpSlide 0.8s ease-out;
+}
+
+@keyframes levelUpSlide {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.level-up-title {
+    font-size: 72px;
+    font-weight: bold;
+    background: linear-gradient(45deg, #4a90e2, #00ff00, #ffaa00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    animation: levelUpPulse 1s infinite;
+}
+
+@keyframes levelUpPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.level-up-number {
+    font-size: 120px;
+    color: var(--primary-color);
+    font-weight: bold;
+    margin: 20px 0;
+    text-shadow: 0 0 30px var(--primary-color);
+}
+
+/* Achievement Badge Unlock */
+.badge-unlock-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-card);
+    border: 4px solid var(--success-color);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    z-index: 1500;
+    animation: badgeUnlock 0.8s ease-out;
+    max-width: 400px;
+    width: 90%;
+}
+
+@keyframes badgeUnlock {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+.badge-unlock-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: badgeSpin 1s ease-out;
+}
+
+@keyframes badgeSpin {
+    0% {
+        transform: rotate(0deg) scale(0);
+    }
+    50% {
+        transform: rotate(180deg) scale(1.3);
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+.badge-unlock-title {
+    font-size: 24px;
+    color: var(--success-color);
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.badge-unlock-name {
+    font-size: 32px;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+/* Streak Indicator */
+.streak-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 170, 0, 0.2);
+    border: 2px solid var(--warning-color);
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-weight: bold;
+    color: var(--warning-color);
+}
+
+.streak-fire {
+    font-size: 20px;
+    animation: fireFlicker 0.5s infinite;
+}
+
+@keyframes fireFlicker {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+/* Progress Bar Animations */
+.progress-bar-animated {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-animated::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Star Rating */
+.star-rating {
+    display: inline-flex;
+    gap: 5px;
+    font-size: 24px;
+}
+
+.star {
+    color: #666;
+    transition: all 0.3s;
+}
+
+.star.active {
+    color: var(--warning-color);
+    animation: starPop 0.3s ease-out;
+    text-shadow: 0 0 10px var(--warning-color);
+}
+
+@keyframes starPop {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Celebration Confetti */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Score Animation */
+.score-increase {
+    position: absolute;
+    color: var(--success-color);
+    font-size: 24px;
+    font-weight: bold;
+    pointer-events: none;
+    animation: scoreFloat 1s ease-out forwards;
+    z-index: 500;
+}
+
+@keyframes scoreFloat {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(1.5);
+    }
+}
+
+/* Combo Indicator */
+.combo-indicator {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: rgba(255, 170, 0, 0.9);
+    border: 3px solid var(--warning-color);
+    border-radius: 15px;
+    padding: 15px 25px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    z-index: 600;
+    animation: comboPulse 0.5s ease-out;
+}
+
+@keyframes comboPulse {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Achievement Progress */
+.achievement-progress {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.achievement-progress-bar {
+    height: 6px;
+    background: var(--primary-color);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Daily Challenge Badge */
+.daily-challenge-badge {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 170, 0, 0.9);
+    border: 3px solid var(--warning-color);
+    border-radius: 12px;
+    padding: 15px 20px;
+    z-index: 100;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.daily-challenge-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(255, 170, 0, 0.4);
+}
+
+.daily-challenge-badge h3 {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.daily-challenge-badge p {
+    color: white;
+    font-size: 14px;
+    opacity: 0.9;
+}
+

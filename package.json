@@ -1,0 +1,29 @@
+{
+  "name": "kubernetes-certification-game",
+  "version": "1.0.0",
+  "description": "Interactive 3D game for learning Kubernetes certifications (Fundamentals, CKA, CKAD)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "kubernetes",
+    "game",
+    "learning",
+    "3d",
+    "certification",
+    "cka",
+    "ckad"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
+
